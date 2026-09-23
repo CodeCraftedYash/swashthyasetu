@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwasthyaSetu • AI Assistant</title><link rel="stylesheet" href="assets/styles.css"></head><body>
+<script src="assets/shared.js"></script><script src="assets/api.js"></script>
+<script>ssPage('ai-assistant.html', `<div class="page-head"><div><h1>🤖 AI Health Assistant</h1><p>Multilingual symptom guidance demo — type or speak in your language.</p></div><span class="badge">● AI Demo</span></div>
+<div class="notice">This assistant provides general health information and urgency guidance. It does not confirm a diagnosis. For severe or emergency symptoms, contact a clinician/emergency service.</div>
+<div class="grid-2"><div class="panel"><div class="panel-head"><h3>Tell me your symptoms</h3></div><div class="panel-pad">
+<div class="field"><label>Language</label><select id="lang"><option value="en-IN">English</option><option value="hi-IN">हिन्दी</option><option value="bn-IN">বাংলা</option><option value="ta-IN">தமிழ்</option><option value="te-IN">తెలుగు</option><option value="mr-IN">मराठी</option><option value="auto">Auto / Browser language</option></select></div>
+<textarea id="aiInput" placeholder="Example: I have cough for 5 days and mild fever... / मुझे 5 दिनों से खांसी है..."></textarea>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn red" id="ask">Get guidance</button><button class="btn outline" id="speak">🎙️ Speak</button><button class="btn outline" id="stopSpeak">Stop</button></div>
+<small id="voiceStatus" style="display:block;margin-top:8px;color:var(--muted)">Voice input uses your browser's speech recognition when supported.</small>
+</div></div>
+<div class="panel"><div class="panel-head"><h3>Assistant response</h3></div><div class="panel-pad"><div id="aiOut" class="result show">Tell me your symptoms to receive general guidance.</div></div></div></div>`);</script>
+<script>
+const rules=[
+ {keys:['chest pain','difficulty breathing','breathlessness','सांस लेने में दिक्कत','सीने में दर्द','saans lene','chest me dard'],level:'URGENT',advice:'Chest pain or breathing difficulty can be serious. Please seek urgent in-person medical assessment or use Emergency SOS if severe.'},
+ {keys:['cough','खांसी','কাশি'],level:'ROUTINE / TIMELY REVIEW',advice:'For a cough, note how many days it has lasted and whether fever, breathing difficulty, chest pain, blood, or worsening symptoms are present. Persistent or worsening cough should be assessed by a clinician.'},
+ {keys:['fever','बुखार','ज्वर'],level:'TIMELY REVIEW',advice:'For fever, monitor temperature, hydration, duration and associated symptoms. Seek clinical advice if fever is persistent, very high, worsening, or accompanied by severe symptoms.'},
+ {keys:['vomit','vomiting','उल्टी','दस्त','diarrhea','diarrhoea'],level:'TIMELY REVIEW',advice:'Focus on fluids and monitor for dehydration. Seek medical care if symptoms are severe, persistent, or there is blood, fainting, confusion, or inability to keep fluids down.'},
+ {keys:['headache','सिर दर्द','सर दर्द'],level:'ROUTINE / TIMELY REVIEW',advice:'Rest, hydration and monitoring may help mild headache. Seek urgent care for sudden severe headache or headache with weakness, confusion, fainting, vision changes, or other severe symptoms.'}
+];
+function answer(text){
+ const t=text.toLowerCase(); const hit=rules.find(r=>r.keys.some(k=>t.includes(k)));
+ if(hit)return '<b>'+hit.level+'</b><p>'+hit.advice+'</p><small>Language-aware demo response. This is not a diagnosis.</small>';
+ return '<b>GENERAL GUIDANCE</b><p>I can help organize symptoms, duration and warning signs, but I cannot confirm a disease. Please share the main symptom, how many days it has been present, severity, age group, and any fever/breathing/chest-pain or other warning signs.</p><small>If symptoms are severe or rapidly worsening, seek urgent medical care.</small>';
+}
+ask.onclick=()=>{const t=aiInput.value.trim();if(t)aiOut.innerHTML=answer(t);else aiOut.textContent='Please describe your symptoms first.'};
+let recognition;
+speak.onclick=()=>{
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){voiceStatus.textContent='Speech recognition is not supported in this browser. You can still type in any language.';return}
+ recognition=new SR(); recognition.lang=lang.value==='auto'?(navigator.language||'en-IN'):lang.value; recognition.interimResults=false; recognition.continuous=false;
+ recognition.onstart=()=>voiceStatus.textContent='Listening… speak now'; recognition.onresult=e=>{aiInput.value=e.results[0][0].transcript;voiceStatus.textContent='Speech captured. Click Get guidance.';}; recognition.onerror=e=>voiceStatus.textContent='Voice input error: '+e.error; recognition.onend=()=>{if(voiceStatus.textContent==='Listening… speak now')voiceStatus.textContent='Voice input ended.'}; recognition.start();
+};
+stopSpeak.onclick=()=>{if(recognition)recognition.stop();};
+</script></body></html>

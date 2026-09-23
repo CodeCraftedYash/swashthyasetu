@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emergency Alert Dashboard — SwasthyaSetu</title>
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  .dash-top{background:var(--primary-dark);color:#fff;padding:32px 0;}
+  .dash-top .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+  .dash-top h1{color:#fff;font-size:26px;}
+  .live-tag{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;color:rgba(255,255,255,.7);}
+  .live-tag .dot{width:8px;height:8px;border-radius:50%;background:#E63946;animation:sos-pulse 1.2s infinite;}
+
+  .layout{display:grid;grid-template-columns:1fr 1.3fr;gap:22px;padding:28px 0;align-items:start;}
+  .map-mini{position:relative;height:320px;border-radius:14px;overflow:hidden;background:
+     linear-gradient(var(--surface-2) 1px, transparent 1px) 0 0/24px 24px,
+     linear-gradient(90deg, var(--surface-2) 1px, transparent 1px) 0 0/24px 24px, #F8FBFC;
+     border:1px solid var(--border);}
+  .map-pin{position:absolute;transform:translate(-50%,-100%);cursor:pointer;}
+  .map-pin .dotm{width:14px;height:14px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+  .map-pin.crit .dotm{background:var(--alert);}
+  .map-pin.ser .dotm{background:var(--warning);}
+  .map-pin.mod .dotm{background:var(--accent);}
+
+  .alert-item{padding:16px;border-left:4px solid var(--border);margin-bottom:12px;}
+  .alert-item.crit{border-left-color:var(--alert);}
+  .alert-item.ser{border-left-color:var(--warning);}
+  .alert-item.mod{border-left-color:var(--accent);}
+  .alert-item .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .alert-item .id{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);}
+  .alert-item p.note{font-size:13.5px;margin-top:6px;}
+  .alert-item .metaline{font-size:12px;color:var(--ink-soft);margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;}
+  .alert-actions{display:flex;gap:8px;margin-top:12px;}
+</style>
+</head>
+<body><section class="dash-top">
+  <div class="container">
+    <div>
+      <div class="eyebrow" style="color:rgba(255,255,255,.6);">Module 09 · Responder view</div>
+      <h1 class="mt-8">Emergency Alert Dashboard</h1>
+    </div>
+    <div class="live-tag"><span class="dot"></span> Live feed — polling every 2s across the network</div>
+  </div>
+</section>
+
+<section class="container">
+  <div class="grid grid-4 mt-24" id="alertStats"></div>
+</section>
+
+<div class="container layout">
+  <div class="card card-pad">
+    <h3 style="font-size:15px;">Active alert map</h3>
+    <p class="faint mt-8" style="font-size:12px;">Approximate positions — normalised for display, not to scale.</p>
+    <div class="map-mini mt-16" id="miniMap"></div>
+    <div class="tag-row mt-16">
+      <span class="pill pill-alert">Critical</span>
+      <span class="pill pill-warn">Serious</span>
+      <span class="pill pill-ok">Moderate</span>
+    </div>
+  </div>
+
+  <div>
+    <div class="flex-between">
+      <h3 style="font-size:15px;">Incoming SOS alerts</h3>
+      <select id="filterSel" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12.5px;">
+        <option value="">All statuses</option>
+        <option value="active">Active only</option>
+        <option value="Resolved">Resolved</option>
+      </select>
+    </div>
+    <div id="alertList" class="mt-16"></div>
+  </div>
+</div>
+
+<script src="assets/shared.js"></script>
+<script>
+rsInitShell('alerts.html');
+
+function sevClass(s){ return s==='Critical'?'crit':s==='Serious'?'ser':'mod'; }
+function sevPill(s){ return s==='Critical'?'pill-alert':s==='Serious'?'pill-warn':'pill-ok'; }
+
+// normalise lat/lng roughly around Jharkhand bounding box to map-mini px coordinates
+function toXY(lat,lng){
+  const x = ((lng - 85.0) / 1.6) * 100;
+  const y = 100 - ((lat - 22.6) / 1.1) * 100;
+  return { x: Math.min(94,Math.max(4,x)), y: Math.min(92,Math.max(6,y)) };
+}
+
+function render(){
+  const filter = document.getElementById('filterSel').value;
+  let alerts = rsGetAlerts();
+
+  const active = alerts.filter(a=>a.status!=='Resolved').length;
+  const crit = alerts.filter(a=>a.severity==='Critical' && a.status!=='Resolved').length;
+  const resolved = alerts.filter(a=>a.status==='Resolved').length;
+  document.getElementById('alertStats').innerHTML = `
+    <div class="stat-tile"><div class="num">${alerts.length}</div><div class="label">Total alerts today</div></div>
+    <div class="stat-tile"><div class="num" style="color:var(--alert);">${active}</div><div class="label">Active right now</div></div>
+    <div class="stat-tile"><div class="num" style="color:var(--warning);">${crit}</div><div class="label">Critical severity</div></div>
+    <div class="stat-tile"><div class="num" style="color:var(--accent);">${resolved}</div><div class="label">Resolved today</div></div>
+  `;
+
+  document.getElementById('miniMap').innerHTML = alerts.filter(a=>a.status!=='Resolved').map(a => {
+    const p = toXY(a.lat, a.lng);
+    return `<div class="map-pin ${sevClass(a.severity)}" style="left:${p.x}%; top:${p.y}%;" title="${a.id}"><div class="dotm"></div></div>`;
+  }).join('');
+
+  const filtered = alerts.filter(a => !filter || (filter==='active' ? a.status!=='Resolved' : a.status===filter));
+  document.getElementById('alertList').innerHTML = filtered.map(a => `
+    <div class="card alert-item ${sevClass(a.severity)}">
+      <div class="top">
+        <div>
+          <span class="pill ${sevPill(a.severity)}">${a.severity}</span>
+          <span class="id" style="margin-left:8px;">${a.id} · ${a.reporter}</span>
+        </div>
+        <span class="faint mono" style="font-size:11px;">${rsTimeAgo(a.time)}</span>
+      </div>
+      <p class="note">${a.note}</p>
+      <div class="metaline">
+        <span>📍 ${a.lat.toFixed(3)}, ${a.lng.toFixed(3)}</span>
+        <span>🏥 ${a.hospital}</span>
+        <span>🚑 ${a.ambulance}</span>
+      </div>
+      <div class="flex-between mt-8">
+        <span class="pill pill-muted">${a.status}</span>
+      </div>
+      <div class="alert-actions">
+        ${a.status!=='Resolved' ? `<button class="btn btn-outline btn-sm" onclick="advanceAlert('${a.id}')">Advance status</button>
+        <button class="btn btn-ghost btn-sm" onclick="resolveAlert('${a.id}')">Mark resolved</button>` : `<span class="faint" style="font-size:12px;">Closed out — no action needed</span>`}
+      </div>
+    </div>
+  `).join('') || '<div class="card card-pad">No alerts match this filter.</div>';
+}
+
+const statusFlow = ['Ambulance en route','Patient picked up','Patient admitted','Resolved'];
+function advanceAlert(id){
+  const alerts = rsGetAlerts();
+  const a = alerts.find(x=>x.id===id);
+  const idx = statusFlow.indexOf(a.status);
+  const next = statusFlow[Math.min(statusFlow.length-1, idx+1)];
+  rsUpdateAlert(id, {status: next});
+  rsToast('Status updated', `${id} → ${next}`, 'ok');
+}
+function resolveAlert(id){
+  rsUpdateAlert(id, {status:'Resolved'});
+  rsToast('Alert resolved', `${id} closed out.`, 'ok');
+}
+
+document.getElementById('filterSel').addEventListener('change', render);
+window.addEventListener('rs-alerts-updated', render);
+window.addEventListener('storage', (e)=>{ if(e.key===RS_DB_KEY) render(); });
+render();
+setInterval(render, 2000);
+</script>
+</body>
+</html>

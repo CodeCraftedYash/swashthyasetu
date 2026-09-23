@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwasthyaSetu • Smart Referrals</title><link rel="stylesheet" href="assets/styles.css"></head><body>
+<script src="assets/shared.js"></script><script src="assets/api.js"></script>
+<script>ssPage('referral.html', `<div class="page-head"><div><h1>Smart Referrals</h1><p>Create a referral, open the route on Google Maps, and follow the complete care chain.</p></div><span class="badge">● Live Demo</span></div>
+<div class="grid-2">
+<div class="panel"><div class="panel-head"><h3>Create Referral</h3></div><form id="refForm" class="panel-pad form-grid">
+<div class="field"><label>Patient name</label><input id="rPatient" required></div>
+<div class="field"><label>Priority</label><select id="rPriority"><option>Routine</option><option>Priority</option><option>Urgent</option></select></div>
+<div class="field"><label>From facility / location</label><input id="rFrom" list="facilityNames" placeholder="Type hospital/PHC name or location" required></div>
+<div class="field"><label>To facility / hospital</label><input id="rTo" list="facilityNames" placeholder="Start typing hospital name..." required><datalist id="facilityNames"></datalist></div>
+<div class="field full"><label>Reason / symptoms</label><textarea id="rReason" required></textarea></div>
+<div class="field full"><button type="button" class="btn outline" id="previewRoute">🗺️ Preview Route</button> <button class="btn red">Create Referral</button></div></form></div>
+<div class="panel"><div class="panel-head"><h3>Route & Care Chain</h3></div><div class="panel-pad">
+<div id="routePreview" class="notice">Enter a hospital/facility name and click Preview Route.</div>
+<div id="mapActions" style="display:none;margin-top:12px"><a id="mapLink" class="btn outline" target="_blank" rel="noopener">🗺️ Open in Google Maps</a></div>
+<div class="flow" style="margin-top:18px;flex-wrap:wrap"><div class="step">Created</div><span class="arrow">→</span><div class="step">Accepted</div><span class="arrow">→</span><div class="step">On the way</div><span class="arrow">→</span><div class="step">Reached</div><span class="arrow">→</span><div class="step">Treatment done</div><span class="arrow">→</span><div class="step">Completed</div></div>
+<p style="color:var(--muted);margin-top:14px">Every status change is stored in the demo referral timeline.</p></div></div></div>
+<div class="panel" style="margin-top:18px"><div class="panel-head"><h3>Referral Tracker</h3></div><div id="refList" class="table-wrap"></div></div>`);</script>
+<script>
+let facilities=[];
+function esc(v){return ssEsc(v||'')}
+function resolveFacility(name){return facilities.find(f=>f.name.toLowerCase()===String(name).trim().toLowerCase())||facilities.find(f=>f.name.toLowerCase().includes(String(name).trim().toLowerCase()))}
+function mapsUrl(from,to){return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(from||'Jamshedpur, Jharkhand')+'&destination='+encodeURIComponent(to)+'&travelmode=driving'}
+function renderRoute(){
+ const from=rFrom.value.trim(), to=rTo.value.trim(), f=resolveFacility(from), t=resolveFacility(to);
+ if(!to){routePreview.textContent='Please enter/select a destination hospital.';return}
+ const dest=t?t.address:to, origin=f?f.address:from||'Jamshedpur, Jharkhand';
+ routePreview.innerHTML='<b>Route ready</b><br>'+esc(origin)+' → '+esc(dest)+(t?'<br><small>Facility: '+esc(t.name)+' • '+t.distanceKm+' km demo distance • '+t.type+'</small>':'');
+ mapLink.href=mapsUrl(origin,dest); mapActions.style.display='block';
+}
+previewRoute.onclick=renderRoute;
+async function updateRef(id,patch){await SS_API.patch('/referrals',{id,...patch});loadRef()}
+function chain(r){
+ const statuses=['Created','Accepted','On the way','Reached','Treatment done','Completed']; const current=statuses.indexOf(r.status);
+ return '<div style="display:flex;gap:6px;flex-wrap:wrap">'+statuses.map((s,i)=>'<span class="pill '+(i<=current?'success':'')+'">'+(i<=current?'✓ ':'')+s+'</span>').join('')+'</div>';
+}
+async function loadRef(){
+ const [rs,fs]=await Promise.all([SS_API.get('/referrals'),SS_API.get('/facilities')]); facilities=fs;
+ facilityNames.innerHTML=fs.map(f=>'<option value="'+esc(f.name)+'">'+esc(f.address)+'</option>').join('');
+ refList.innerHTML='<table class="table"><thead><tr><th>Patient</th><th>Route</th><th>Care chain</th><th>Travel</th><th>Treatment</th><th>Actions</th></tr></thead><tbody>'+
+ (rs.map(r=>'<tr><td>'+esc(r.patientName)+'<br><small>'+esc(r.priority)+'</small></td><td>'+esc(r.fromFacility)+' → '+esc(r.toFacility)+'<br><a href="'+mapsUrl(r.fromFacility,r.toFacility)+'" target="_blank">🗺️ Map</a></td><td>'+chain(r)+'</td><td>'+((r.onWay)?'🚑 On the way':'⏸ Not started')+'</td><td>'+esc(r.treatment||'Pending')+'</td><td><select onchange="quickUpdate('+r.id+',this.value)"><option value="">Update...</option><option>Accepted</option><option>On the way</option><option>Reached</option><option>Treatment done</option><option>Completed</option></select><br><button class="btn outline" style="margin-top:5px" onclick="toggleWay('+r.id+','+(!r.onWay)+')">'+(r.onWay?'Stop route':'🚑 Start route')+'</button></td></tr>').join('')||'<tr><td colspan="6">No referrals yet.</td></tr>')+'</tbody></table>';
+}
+async function quickUpdate(id,status){if(!status)return;const patch={status};if(status==='Treatment done')patch.treatment='Treatment completed';if(status==='Completed')patch.treatment='Treatment completed';if(status==='On the way')patch.onWay=true;await updateRef(id,patch)}
+async function toggleWay(id,v){await updateRef(id,{onWay:v,status:v?'On the way':'Accepted'})}
+refForm.addEventListener('submit',async e=>{e.preventDefault();try{await SS_API.post('/referrals',{patientName:rPatient.value,fromFacility:rFrom.value,toFacility:rTo.value,reason:rReason.value,priority:rPriority.value});ssToast('Referral created');refForm.reset();mapActions.style.display='none';loadRef()}catch(e){ssToast(e.message)}});loadRef();
+</script></body></html>
