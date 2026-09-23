@@ -1,0 +1,56 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    "sourceMap": true,
+
+    "types": ["node"]
+  },
+  "include": [
+    "src/app.ts",
+    "src/server.ts",
+    "src/config/**/*.ts",
+    "src/lib/**/*.ts",
+    "src/middlewares/**/*.ts",
+    "src/modules/auth/**/*.ts",
+    "src/modules/health/**/*.ts",
+    "src/modules/user/**/*.ts",
+    "src/repositories/**/*.ts",
+    "src/route/**/*.ts",
+    "src/services/**/*.ts",
+    "src/types/**/*.ts",
+    "src/utils/**/*.ts",
+    "src/generated/prisma/**/*.ts",
+    "prisma/prisma.config.ts"
+  ],
+  "exclude": [
+    "src/library/**",
+    "src/routes/**",
+    "src/modules/alert/**",
+    "src/modules/ambulance/**",
+    "src/modules/appointment/**",
+    "src/modules/asha/**",
+    "src/modules/bed/**",
+    "src/modules/doctor/**",
+    "src/modules/hospital/**",
+    "src/modules/notification/**",
+    "src/modules/qr-checkin/**",
+    "src/modules/scheme/**",
+    "src/modules/severity/**",
+    "src/modules/teleconsultation/**",
+    "src/modules/token/**"
+  ]
+}

@@ -1,0 +1,697 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String?         @unique
+  phone          String?         @unique
+  passwordHash   String?
+  firstName      String
+  lastName       String?
+  roles          UserRole[]
+  isActive       Boolean         @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  assignedAlerts Alert[]         @relation("AlertAssignee")
+  reportedAlerts Alert[]         @relation("AlertReporter")
+  ashaProfile    AshaWorker?
+  auditLogs      AuditLog[]
+  consents       Consent[]
+  doctorProfile  DoctorProfile?
+  notifications  Notification[]
+  patientProfile PatientProfile?
+  sessions       Session[]
+
+  @@index([phone])
+  @@index([email])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PatientProfile {
+  id                 String               @id @default(cuid())
+  userId             String               @unique
+  dateOfBirth        DateTime?
+  gender             Gender?
+  bloodGroup         String?
+  address            String?
+  village            String?
+  district           String?
+  state              String?
+  emergencyContact   String?
+  emergencyPhone     String?
+  medicalNotes       String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  alerts             Alert[]
+  appointments       Appointment[]
+  consents           Consent[]
+  followUps          FollowUpTask[]
+  householdMembers   HouseholdMember[]
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  qrCheckIns         QRCheckIn[]
+  schemeApplications SchemeApplication[]
+  assessments        SeverityAssessment[]
+  teleconsultations  Teleconsultation[]
+  tokens             TokenBooking[]
+
+  @@index([district, state])
+}
+
+model Hospital {
+  id               String              @id @default(cuid())
+  code             String              @unique
+  name             String
+  area             String
+  address          String?
+  district         String?
+  state            String?
+  phone            String?
+  latitude         Decimal?            @db.Decimal(10, 7)
+  longitude        Decimal?            @db.Decimal(10, 7)
+  level            HospitalLevel
+  status           HospitalStatus      @default(AVAILABLE)
+  queueLength      Int                 @default(0)
+  averageWaitMins  Int                 @default(0)
+  isActive         Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  alerts           Alert[]
+  ambulances       Ambulance[]
+  appointments     Appointment[]
+  beds             BedInventory[]
+  bloodInventories BloodInventory[]
+  doctors          DoctorProfile[]
+  schemes          HospitalScheme[]
+  specialties      HospitalSpecialty[]
+  qrCheckIns       QRCheckIn[]
+  teleconsults     Teleconsultation[]
+  tokens           TokenBooking[]
+
+  @@index([district, state])
+  @@index([status])
+}
+
+model Specialty {
+  id          String              @id @default(cuid())
+  name        String              @unique
+  description String?
+  doctors     DoctorSpecialty[]
+  hospitals   HospitalSpecialty[]
+}
+
+model HospitalSpecialty {
+  hospitalId  String
+  specialtyId String
+  hospital    Hospital  @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  specialty   Specialty @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+
+  @@id([hospitalId, specialtyId])
+}
+
+model BedInventory {
+  id           String   @id @default(cuid())
+  hospitalId   String
+  wardType     WardType
+  totalBeds    Int
+  occupiedBeds Int      @default(0)
+  updatedAt    DateTime @updatedAt
+  hospital     Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, wardType])
+  @@index([wardType])
+}
+
+model DoctorProfile {
+  id            String             @id @default(cuid())
+  userId        String?            @unique
+  hospitalId    String
+  name          String
+  department    String
+  licenseNumber String?            @unique
+  status        DoctorStatus       @default(AVAILABLE)
+  servingToken  Int?
+  nextFreeSlot  DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  appointments  Appointment[]
+  hospital      Hospital           @relation(fields: [hospitalId], references: [id])
+  user          User?              @relation(fields: [userId], references: [id])
+  specialties   DoctorSpecialty[]
+  teleconsults  Teleconsultation[]
+  tokens        TokenBooking[]
+
+  @@index([hospitalId, status])
+  @@index([department])
+}
+
+model DoctorSpecialty {
+  doctorId    String
+  specialtyId String
+  doctor      DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  specialty   Specialty     @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+
+  @@id([doctorId, specialtyId])
+}
+
+model Ambulance {
+  id             String              @id
+  registrationNo String?             @unique
+  driverName     String
+  driverPhone    String?
+  type           AmbulanceType
+  baseStation    String
+  status         AmbulanceStatus     @default(IDLE)
+  latitude       Decimal?            @db.Decimal(10, 7)
+  longitude      Decimal?            @db.Decimal(10, 7)
+  currentEtaMins Int?
+  hospitalId     String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  alerts         Alert[]
+  hospital       Hospital?           @relation(fields: [hospitalId], references: [id])
+  locationEvents AmbulanceLocation[]
+
+  @@index([status])
+  @@index([hospitalId])
+}
+
+model AmbulanceLocation {
+  id          String    @id @default(cuid())
+  ambulanceId String
+  latitude    Decimal   @db.Decimal(10, 7)
+  longitude   Decimal   @db.Decimal(10, 7)
+  speedKmh    Decimal?  @db.Decimal(6, 2)
+  recordedAt  DateTime  @default(now())
+  ambulance   Ambulance @relation(fields: [ambulanceId], references: [id], onDelete: Cascade)
+
+  @@index([ambulanceId, recordedAt])
+}
+
+model Alert {
+  id             String          @id @default(cuid())
+  patientId      String?
+  reporterUserId String?
+  assignedById   String?
+  hospitalId     String?
+  ambulanceId    String?
+  severity       AlertSeverity
+  status         AlertStatus     @default(CREATED)
+  reporter       AlertReporter
+  note           String?
+  latitude       Decimal?        @db.Decimal(10, 7)
+  longitude      Decimal?        @db.Decimal(10, 7)
+  resolvedAt     DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  ambulance      Ambulance?      @relation(fields: [ambulanceId], references: [id])
+  assignedBy     User?           @relation("AlertAssignee", fields: [assignedById], references: [id])
+  hospital       Hospital?       @relation(fields: [hospitalId], references: [id])
+  patient        PatientProfile? @relation(fields: [patientId], references: [id])
+  reporterUser   User?           @relation("AlertReporter", fields: [reporterUserId], references: [id])
+  events         AlertEvent[]
+
+  @@index([status, severity])
+  @@index([createdAt])
+  @@index([latitude, longitude])
+}
+
+model AlertEvent {
+  id        String      @id @default(cuid())
+  alertId   String
+  status    AlertStatus
+  note      String?
+  createdAt DateTime    @default(now())
+  alert     Alert       @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId, createdAt])
+}
+
+model Symptom {
+  id          String              @id @default(cuid())
+  code        String              @unique
+  name        String
+  description String?
+  weight      Int                 @default(0)
+  isCritical  Boolean             @default(false)
+  assessments AssessmentSymptom[]
+}
+
+model SeverityAssessment {
+  id             String              @id @default(cuid())
+  patientId      String?
+  score          Int
+  severity       AssessmentSeverity
+  recommendation String?
+  locationLat    Decimal?            @db.Decimal(10, 7)
+  locationLng    Decimal?            @db.Decimal(10, 7)
+  createdAt      DateTime            @default(now())
+  appointment    Appointment?
+  symptoms       AssessmentSymptom[]
+  patient        PatientProfile?     @relation(fields: [patientId], references: [id])
+
+  @@index([patientId, createdAt])
+  @@index([severity])
+}
+
+model AssessmentSymptom {
+  assessmentId String
+  symptomId    String
+  answer       Boolean
+  notes        String?
+  assessment   SeverityAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  symptom      Symptom            @relation(fields: [symptomId], references: [id])
+
+  @@id([assessmentId, symptomId])
+}
+
+model Appointment {
+  id           String              @id @default(cuid())
+  patientId    String
+  doctorId     String?
+  hospitalId   String
+  assessmentId String?             @unique
+  type         AppointmentType
+  status       AppointmentStatus   @default(REQUESTED)
+  scheduledAt  DateTime?
+  reason       String?
+  notes        String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  assessment   SeverityAssessment? @relation(fields: [assessmentId], references: [id])
+  doctor       DoctorProfile?      @relation(fields: [doctorId], references: [id])
+  hospital     Hospital            @relation(fields: [hospitalId], references: [id])
+  patient      PatientProfile      @relation(fields: [patientId], references: [id])
+  teleconsult  Teleconsultation?
+  token        TokenBooking?
+
+  @@index([patientId, status])
+  @@index([doctorId, scheduledAt])
+  @@index([hospitalId, scheduledAt])
+}
+
+model TokenBooking {
+  id            String         @id @default(cuid())
+  tokenNumber   Int
+  patientId     String
+  hospitalId    String
+  doctorId      String?
+  appointmentId String?        @unique
+  status        TokenStatus    @default(BOOKED)
+  bookedFor     DateTime
+  checkedInAt   DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime       @default(now())
+  appointment   Appointment?   @relation(fields: [appointmentId], references: [id])
+  doctor        DoctorProfile? @relation(fields: [doctorId], references: [id])
+  hospital      Hospital       @relation(fields: [hospitalId], references: [id])
+  patient       PatientProfile @relation(fields: [patientId], references: [id])
+
+  @@unique([hospitalId, bookedFor, tokenNumber])
+  @@index([hospitalId, bookedFor, status])
+  @@index([doctorId, bookedFor])
+}
+
+model QRCheckIn {
+  id         String          @id @default(cuid())
+  qrToken    String          @unique
+  patientId  String?
+  hospitalId String
+  deskName   String?
+  status     CheckInStatus   @default(CREATED)
+  expiresAt  DateTime
+  scannedAt  DateTime?
+  verifiedAt DateTime?
+  createdAt  DateTime        @default(now())
+  hospital   Hospital        @relation(fields: [hospitalId], references: [id])
+  patient    PatientProfile? @relation(fields: [patientId], references: [id])
+
+  @@index([hospitalId, status])
+  @@index([expiresAt])
+}
+
+model Teleconsultation {
+  id            String            @id @default(cuid())
+  patientId     String
+  doctorId      String?
+  hospitalId    String?
+  appointmentId String?           @unique
+  status        TeleconsultStatus @default(REQUESTED)
+  scheduledAt   DateTime?
+  startedAt     DateTime?
+  endedAt       DateTime?
+  meetingUrl    String?
+  patientNotes  String?
+  doctorNotes   String?
+  prescription  String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  appointment   Appointment?      @relation(fields: [appointmentId], references: [id])
+  doctor        DoctorProfile?    @relation(fields: [doctorId], references: [id])
+  hospital      Hospital?         @relation(fields: [hospitalId], references: [id])
+  patient       PatientProfile    @relation(fields: [patientId], references: [id])
+
+  @@index([patientId, status])
+  @@index([doctorId, scheduledAt])
+}
+
+model AshaWorker {
+  id         String         @id @default(cuid())
+  userId     String         @unique
+  workerCode String?        @unique
+  village    String?
+  district   String?
+  phone      String?
+  isActive   Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  followUps  FollowUpTask[]
+  households Household[]
+}
+
+model Household {
+  id           String            @id @default(cuid())
+  ashaWorkerId String?
+  name         String
+  address      String?
+  village      String?
+  district     String?
+  latitude     Decimal?          @db.Decimal(10, 7)
+  longitude    Decimal?          @db.Decimal(10, 7)
+  priority     Int               @default(0)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  ashaWorker   AshaWorker?       @relation(fields: [ashaWorkerId], references: [id])
+  members      HouseholdMember[]
+
+  @@index([ashaWorkerId])
+  @@index([village, district])
+}
+
+model HouseholdMember {
+  id           String          @id @default(cuid())
+  householdId  String
+  patientId    String?
+  name         String
+  relationship String?
+  dateOfBirth  DateTime?
+  phone        String?
+  household    Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  patient      PatientProfile? @relation(fields: [patientId], references: [id])
+
+  @@index([householdId])
+  @@index([patientId])
+}
+
+model FollowUpTask {
+  id           String         @id @default(cuid())
+  patientId    String
+  ashaWorkerId String?
+  title        String
+  description  String?
+  dueDate      DateTime?
+  status       FollowUpStatus @default(PENDING)
+  completedAt  DateTime?
+  notes        String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  ashaWorker   AshaWorker?    @relation(fields: [ashaWorkerId], references: [id])
+  patient      PatientProfile @relation(fields: [patientId], references: [id])
+
+  @@index([ashaWorkerId, status])
+  @@index([patientId, status])
+  @@index([dueDate])
+}
+
+model GovernmentScheme {
+  id           String              @id @default(cuid())
+  name         String
+  description  String
+  benefits     String?
+  eligibility  String?
+  officialUrl  String?
+  status       SchemeStatus        @default(ACTIVE)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  hospitals    HospitalScheme[]
+  applications SchemeApplication[]
+}
+
+model HospitalScheme {
+  hospitalId String
+  schemeId   String
+  hospital   Hospital         @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  scheme     GovernmentScheme @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+
+  @@id([hospitalId, schemeId])
+}
+
+model SchemeApplication {
+  id        String           @id @default(cuid())
+  schemeId  String
+  patientId String
+  status    String           @default("PENDING")
+  notes     String?
+  appliedAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  patient   PatientProfile   @relation(fields: [patientId], references: [id])
+  scheme    GovernmentScheme @relation(fields: [schemeId], references: [id])
+
+  @@index([patientId, status])
+  @@index([schemeId, status])
+}
+
+model BloodInventory {
+  id         String   @id @default(cuid())
+  hospitalId String
+  bloodGroup String
+  units      Int      @default(0)
+  updatedAt  DateTime @updatedAt
+  hospital   Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, bloodGroup])
+}
+
+model Consent {
+  id        String          @id @default(cuid())
+  userId    String
+  patientId String?
+  type      ConsentType
+  granted   Boolean
+  version   String
+  grantedAt DateTime?
+  revokedAt DateTime?
+  createdAt DateTime        @default(now())
+  patient   PatientProfile? @relation(fields: [patientId], references: [id])
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@index([patientId, type])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ASHA_WORKER
+  HOSPITAL_STAFF
+  POLICE_RESPONDER
+  AMBULANCE_DRIVER
+  GOVERNMENT_ADMIN
+  SUPER_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum HospitalLevel {
+  LEVEL_I_TRAUMA
+  LEVEL_II
+  LEVEL_III
+}
+
+enum HospitalStatus {
+  AVAILABLE
+  BUSY
+  FULL
+  CLOSED
+}
+
+enum WardType {
+  GENERAL
+  ICU
+  VENTILATOR
+  PEDIATRIC
+  MATERNITY
+  ISOLATION
+  NICU
+}
+
+enum DoctorStatus {
+  AVAILABLE
+  BUSY
+  IN_SURGERY
+  ON_LEAVE
+  OFFLINE
+}
+
+enum AmbulanceType {
+  ALS
+  BLS
+}
+
+enum AmbulanceStatus {
+  IDLE
+  DISPATCHED
+  EN_ROUTE
+  AT_SCENE
+  TRANSPORTING
+  ARRIVED
+  OUT_OF_SERVICE
+}
+
+enum AlertSeverity {
+  MODERATE
+  SERIOUS
+  CRITICAL
+}
+
+enum AlertStatus {
+  CREATED
+  ACKNOWLEDGED
+  AMBULANCE_ASSIGNED
+  AMBULANCE_EN_ROUTE
+  PATIENT_PICKED_UP
+  PATIENT_ADMITTED
+  RESOLVED
+  CANCELLED
+}
+
+enum AlertReporter {
+  APP_SOS
+  BYSTANDER_CALL
+  POLICE
+  ASHA_WORKER
+  HOSPITAL
+  SYSTEM
+}
+
+enum AssessmentSeverity {
+  LOW
+  MODERATE
+  SERIOUS
+  CRITICAL
+}
+
+enum TokenStatus {
+  BOOKED
+  CHECKED_IN
+  SERVING
+  COMPLETED
+  CANCELLED
+  MISSED
+}
+
+enum AppointmentType {
+  IN_PERSON
+  TELECONSULTATION
+  EMERGENCY
+}
+
+enum AppointmentStatus {
+  REQUESTED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum CheckInStatus {
+  CREATED
+  SCANNED
+  VERIFIED
+  EXPIRED
+  CANCELLED
+}
+
+enum TeleconsultStatus {
+  REQUESTED
+  SCHEDULED
+  WAITING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum FollowUpStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  MISSED
+  CANCELLED
+}
+
+enum SchemeStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum ConsentType {
+  MEDICAL_DATA
+  LOCATION
+  TELECONSULTATION
+  EMERGENCY_CONTACT
+  MARKETING
+}
