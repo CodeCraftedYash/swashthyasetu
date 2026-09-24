@@ -1,0 +1,170 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwasthyaSetu</title><link rel="stylesheet" href="assets/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+.mh-wrap{max-width:760px;margin:0 auto}
+.mh-search{display:flex;gap:8px;margin:14px 0 22px;flex-wrap:wrap}
+.mh-search input{flex:1;min-width:180px;padding:12px 14px;border-radius:12px;border:1px solid #dde3e6;font-size:16px}
+.mh-mic{width:46px;height:46px;border-radius:50%;border:none;background:linear-gradient(160deg,#E63946,#B82935);color:#fff;font-size:20px;cursor:pointer}
+.mh-mic.on{animation:mhPulse 1.1s infinite}
+@keyframes mhPulse{0%{box-shadow:0 0 0 0 rgba(230,57,70,.45)}70%{box-shadow:0 0 0 18px rgba(230,57,70,0)}100%{box-shadow:0 0 0 0 rgba(230,57,70,0)}}
+.mh-actions{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.mh-timeline{position:relative;padding-left:34px}
+.mh-timeline::before{content:'';position:absolute;left:14px;top:6px;bottom:6px;width:3px;background:#e2e8ec;border-radius:3px}
+.mh-item{position:relative;background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.mh-item::before{content:attr(data-icon);position:absolute;left:-34px;top:14px;width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-size:17px}
+.mh-date{font-size:13px;color:var(--muted);font-weight:700}
+.mh-title{font-size:17px;font-weight:800;margin:4px 0 2px}
+.mh-fac{font-size:13.5px;color:#0E9E88;font-weight:700}
+.mh-detail{font-size:14px;color:var(--muted);margin-top:6px}
+.mh-empty{text-align:center;color:var(--muted);padding:40px 10px}
+</style>
+</head><body>
+<script src="assets/shared.js"></script>
+<script src="assets/api.js"></script>
+<script>ssPage('my-health-history.html', `
+<div class="page-head"><div><h1 data-en="My Medical History" data-hi="मेरा मेडिकल इतिहास" data-mr="माझा वैद्यकीय इतिहास">My Medical History</h1><p data-en="Every visit, test and medicine — in one place, and downloadable as PDF." data-hi="हर विजिट, जांच और दवा — एक ही जगह, और PDF में डाउनलोड भी कर सकते हैं।" data-mr="प्रत्येक भेट, तपासणी व औषध — एकाच ठिकाणी, आणि PDF मध्ये डाउनलोडही करता येते.">Every visit, test and medicine — in one place, and downloadable as PDF.</p></div><span class="badge">● <span data-en="Live Demo" data-hi="लाइव डेमो" data-mr="लाइव्ह डेमो">Live Demo</span></span></div>
+<div class="mh-wrap">
+  <div class="mh-search">
+    <input id="mhName" data-en-placeholder="Type or speak the patient's name" data-hi-placeholder="मरीज़ का नाम टाइप या बोलें" data-mr-placeholder="रुग्णाचे नाव टाइप किंवा बोला" placeholder="Type or speak the patient's name">
+    <button class="mh-mic" id="mhMic" aria-label="Speak name">🎤</button>
+  </div>
+  <div class="mh-actions">
+    <button class="btn red" id="mhListen">🔊 <span data-en="Read aloud" data-hi="सुनें" data-mr="ऐका">Read aloud</span></button>
+    <button class="btn outline" id="mhPdf">📄 <span data-en="Download PDF" data-hi="PDF डाउनलोड करें" data-mr="PDF डाउनलोड करा">Download PDF</span></button>
+  </div>
+  <div id="mhTimeline" class="mh-timeline"><div class="mh-empty" data-en="Loading…" data-hi="लोड हो रहा है…" data-mr="लोड होत आहे…">Loading…</div></div>
+</div>
+`);
+</script>
+<script>
+(function(){
+  const ICONS = {Visit:'🏥', Test:'🩸', Prescription:'💊', Vaccination:'💉'};
+  const nameInput = document.getElementById('mhName');
+  const micBtn = document.getElementById('mhMic');
+  const timelineEl = document.getElementById('mhTimeline');
+  const params = new URLSearchParams(location.search);
+  let rows = [];
+
+  function T(en,hi,mr){ const l=ssLang(); return l==='hi'?hi:l==='mr'?mr:en; }
+
+  function render(){
+    if(!rows.length){ timelineEl.innerHTML = `<div class="mh-empty">${T('No history found for this name yet.','इस नाम के लिए अभी कोई इतिहास नहीं मिला।','या नावासाठी अजून इतिहास सापडला नाही.')}</div>`; return; }
+    timelineEl.innerHTML = rows.map(r => `<div class="mh-item" data-icon="${ICONS[r.type]||'📄'}">
+      <div class="mh-date">${ssEsc(r.date)} · ${ssEsc(r.type)}</div>
+      <div class="mh-title">${ssEsc(r.title)}</div>
+      <div class="mh-fac">${ssEsc(r.facility||'')}</div>
+      <div class="mh-detail">${ssEsc(r.details||'')}</div>
+    </div>`).join('');
+  }
+
+  async function load(name){
+    timelineEl.innerHTML = `<div class="mh-empty">${T('Loading…','लोड हो रहा है…','लोड होत आहे…')}</div>`;
+    try{ rows = await SS_API.get('/history' + (name ? `?patient=${encodeURIComponent(name)}` : '')); }
+    catch(e){ rows = []; }
+    render();
+  }
+
+  nameInput.value = params.get('name') || '';
+  load(nameInput.value.trim());
+  let debounce;
+  nameInput.addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(() => load(nameInput.value.trim()), 400); });
+
+  // ---- speak (name search mic + read-aloud) ----
+  const LANG_MAP = {en:'en-IN', hi:'hi-IN', mr:'mr-IN'};
+  function speak(text, onDone){
+    if(!('speechSynthesis' in window)){ if(onDone) onDone(); return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    const wantLang = LANG_MAP[ssLang()] || 'en-IN';
+    let done = false;
+    const finish = ()=>{ if(done) return; done = true; if(onDone) onDone(); };
+    u.onend = finish; u.onerror = finish;
+    setTimeout(finish, Math.max(4000, text.length*90));
+    let spoken = false;
+    function doSpeak(){
+      if(spoken) return; spoken = true;
+      try{ speechSynthesis.resume(); }catch(e){}
+      const voices = speechSynthesis.getVoices();
+      const v = voices.find(v=>v.lang===wantLang) || voices.find(v=>v.lang && v.lang.toLowerCase().startsWith(ssLang()));
+      if(v){ u.voice=v; u.lang=v.lang; } else { u.lang='en-US'; }
+      speechSynthesis.speak(u);
+      setTimeout(()=>{ try{ speechSynthesis.resume(); }catch(e){} }, 60);
+    }
+    if(speechSynthesis.getVoices().length===0){
+      speechSynthesis.addEventListener('voiceschanged', doSpeak, {once:true});
+      setTimeout(doSpeak, 300);
+    } else { doSpeak(); }
+  }
+
+  micBtn.addEventListener('click', () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ ssToast('Voice input not supported — use Chrome'); return; }
+    const r = new SR();
+    r.lang = LANG_MAP[ssLang()] || 'en-IN'; r.interimResults = false; r.maxAlternatives = 1;
+    micBtn.classList.add('on');
+    r.onresult = e => { nameInput.value = e.results[0][0].transcript; load(nameInput.value.trim()); };
+    r.onerror = () => ssToast(T('Could not hear anything','कुछ सुनाई नहीं दिया','काही ऐकू आले नाही'));
+    r.onend = () => micBtn.classList.remove('on');
+    try{ r.start(); }catch(e){ micBtn.classList.remove('on'); }
+  });
+
+  document.getElementById('mhListen').addEventListener('click', () => {
+    if(!rows.length){ speak(T('No history found.','कोई इतिहास नहीं मिला।','इतिहास सापडला नाही.')); return; }
+    const lines = rows.map(r => `${r.date}. ${r.type}. ${r.title}${r.facility ? ', at ' + r.facility : ''}. ${r.details||''}`);
+    speak(T('Here is the medical history. ','यह रहा मेडिकल इतिहास। ','हा वैद्यकीय इतिहास आहे. ') + lines.join('. '));
+  });
+
+  document.getElementById('mhPdf').addEventListener('click', () => {
+    if(!window.jspdf){
+      // Offline fallback: the jsPDF library needs internet to load once, but if it
+      // isn't available we can still let the patient save/print a PDF using the
+      // browser's own built-in print dialog, which works with zero internet.
+      printHistoryOffline();
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const patient = nameInput.value.trim() || 'Patient';
+    doc.setFontSize(18); doc.text('SwasthyaSetu — Medical History', 14, 18);
+    doc.setFontSize(11); doc.setTextColor(90); doc.text(`Patient: ${patient}`, 14, 27);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 33);
+    let y = 45;
+    if(!rows.length){ doc.setTextColor(0); doc.text('No history records found.', 14, y); }
+    rows.forEach(r => {
+      if(y > 270){ doc.addPage(); y = 20; }
+      doc.setTextColor(0); doc.setFontSize(12); doc.setFont(undefined,'bold');
+      doc.text(`${r.date} — ${r.type}: ${r.title}`, 14, y); y += 6;
+      doc.setFont(undefined,'normal'); doc.setFontSize(10.5); doc.setTextColor(70);
+      if(r.facility){ doc.text(`Facility: ${r.facility}`, 14, y); y += 5.5; }
+      if(r.details){ const split = doc.splitTextToSize(r.details, 180); doc.text(split, 14, y); y += split.length*5.5; }
+      y += 4;
+    });
+    doc.save(`SwasthyaSetu-History-${patient.replace(/\s+/g,'_')}.pdf`);
+    ssToast('PDF downloaded');
+  });
+
+  function printHistoryOffline(){
+    const patient = nameInput.value.trim() || 'Patient';
+    const rowsHtml = rows.length ? rows.map(r => `
+      <div style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #ddd">
+        <b>${r.date} — ${r.type}: ${r.title}</b><br>
+        ${r.facility ? `<small>Facility: ${r.facility}</small><br>` : ''}
+        ${r.details ? `<small>${r.details}</small>` : ''}
+      </div>`).join('') : '<p>No history records found.</p>';
+    const w = window.open('', '_blank');
+    if(!w){ ssToast(T('Please allow pop-ups to save as PDF','PDF सेव करने के लिए पॉप-अप की अनुमति दें','PDF सेव्ह करण्यासाठी पॉप-अप परवानगी द्या')); return; }
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>SwasthyaSetu — Medical History</title>
+      <style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:20px;margin-bottom:2px}small{color:#555}</style>
+      </head><body>
+      <h1>SwasthyaSetu — Medical History</h1>
+      <p>Patient: ${ssEsc(patient)}<br>Generated: ${new Date().toLocaleString()}</p>
+      ${rowsHtml}
+      <script>window.onload=()=>{window.print();}<\/script>
+      </body></html>`);
+    w.document.close();
+    ssToast(T('Use "Save as PDF" in the print dialog — works offline','प्रिंट डायलॉग में "PDF के रूप में सेव करें" चुनें — ऑफ़लाइन काम करता है','प्रिंट डायलॉगमध्ये "PDF म्हणून सेव्ह करा" निवडा — ऑफलाइन काम करते'));
+  }
+})();
+</script>
+</body></html>

@@ -1,0 +1,153 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwasthyaSetu</title><link rel="stylesheet" href="assets/styles.css"></head><body><script src="assets/shared.js"></script><script src="assets/api.js"></script><script>ssPage('triage.html', `<div class="page-head"><div><h1 data-en="Symptom Check &amp; Severity" data-hi="लक्षण जांच और गंभीरता" data-mr="लक्षण तपासणी आणि तीव्रता">Symptom Check &amp; Severity</h1><p data-en="Describe symptoms in your own words — Hindi, Marathi or English." data-hi="अपने लक्षण अपनी भाषा में बताएं — हिंदी, मराठी या अंग्रेज़ी।" data-mr="तुमची लक्षणे तुमच्या भाषेत सांगा — हिंदी, मराठी किंवा इंग्रजी.">Describe symptoms in your own words — Hindi, Marathi or English.</p></div><span class="badge">● <span data-en="Live AI" data-hi="लाइव AI" data-mr="लाइव्ह AI">Live AI</span></span></div><div class="notice" data-en="For emergencies or rapidly worsening symptoms, use Emergency SOS or contact local emergency services. This assistant gives guidance, not a diagnosis." data-hi="आपात स्थिति या तेजी से बिगड़ते लक्षणों में Emergency SOS का उपयोग करें। यह सहायक मार्गदर्शन देता है, निदान नहीं।" data-mr="आणीबाणी किंवा वेगाने बिघडणाऱ्या लक्षणांसाठी Emergency SOS वापरा. हा सहाय्यक मार्गदर्शन देतो, निदान नाही.">For emergencies or rapidly worsening symptoms, use Emergency SOS or contact local emergency services. This assistant gives guidance, not a diagnosis.</div><div class="grid-2"><div class="panel"><div class="panel-head"><h3 data-en="Patient &amp; symptoms" data-hi="मरीज व लक्षण" data-mr="रुग्ण आणि लक्षणे">Patient &amp; symptoms</h3></div><form id="triageForm" class="panel-pad form-grid"><div class="field"><label data-en="Patient name (optional)" data-hi="मरीज का नाम (वैकल्पिक)" data-mr="रुग्णाचे नाव (ऐच्छिक)">Patient name (optional)</label><input id="patientName"></div><div class="field"><label data-en="Village" data-hi="गांव" data-mr="गाव">Village</label><input id="village"></div><div class="field full"><label data-en="Describe symptoms" data-hi="लक्षण बताएं" data-mr="लक्षणे सांगा">Describe symptoms</label><div style="display:flex;gap:8px;align-items:flex-start"><textarea id="symptoms" required style="flex:1" placeholder="Fever for 3 days, body pain... / bukhar aur badan dard hai... / ताप आणि अंगदुखी आहे..."></textarea><button type="button" id="micBtn" title="Speak your symptoms" style="flex:0 0 52px;height:52px;border-radius:50%;border:2px solid #E63946;background:#fff;font-size:20px;cursor:pointer">🎤</button></div><small id="micStatus" style="color:var(--muted);display:block;margin-top:4px" data-en="Tap the mic and speak your symptoms — Hindi, Marathi or English" data-hi="माइक दबाएं और अपने लक्षण बोलें — हिंदी, मराठी या अंग्रेज़ी" data-mr="माइक दाबा आणि तुमची लक्षणे बोला — हिंदी, मराठी किंवा इंग्रजी">Tap the mic and speak your symptoms — Hindi, Marathi or English</small></div><div class="field full"><button class="btn red" data-en="Get care guidance" data-hi="देखभाल मार्गदर्शन प्राप्त करें" data-mr="काळजी मार्गदर्शन मिळवा">Get care guidance</button></div></form></div><div class="panel"><div class="panel-head"><h3 data-en="Guidance" data-hi="मार्गदर्शन" data-mr="मार्गदर्शन">Guidance</h3></div><div class="panel-pad"><div id="triageResult" class="result">Fill the form to get AI-assisted severity guidance.</div></div></div></div>`);</script><script>
+const TRIAGE_BACKEND_URL = "http://127.0.0.1:5000/chat"; // Flask backend (ya ngrok URL)
+
+// ---------- Offline fallback: same rule-based keyword classifier as backend/app.py ----------
+// If there's no internet AND no local backend running (the normal situation for a
+// patient's own phone in a village), the AI Symptom Check still works fully offline
+// using this local copy of the classifier, so nobody is left without guidance.
+const SS_OFFLINE_KEYWORDS = {
+  EMERGENCY: ["chest pain","difficulty breathing","can't breathe","cannot breathe","unconscious","unresponsive","severe bleeding","heavy bleeding","convulsion","seizure","stroke","paralysis","poisoning","suicide","not breathing","blue lips","severe burn","snake bite","drowning","saans nahi","behosh","khoon zyada","chhati me dard","dorra pad raha","zeher","सांस नहीं","बेहोश","ज्यादा खून","छाती में दर्द","दौरा","जहर","लकवा","श्वास घेता येत नाही","बेशुद्ध","जास्त रक्तस्त्राव","छातीत दुखणे","फेफरे","विष"],
+  HIGH: ["high fever","tez bukhar","बहुत तेज़ बुखार","जास्त ताप","vomiting blood","khoon ki ulti","severe pain","bahut dard","बहुत दर्द","तीव्र वेदना","dehydration","dast","दस्त","पातळ जुलाब","breathless","saans phulna","सांस फूलना","धाप लागणे"],
+  MODERATE: ["fever","bukhar","बुखार","ताप","cough","khansi","खांसी","खोकला","pain","dard","दर्द","दुखणे","cold","sardi","सर्दी","सर्दी-खोकला","headache","sir dard","सिरदर्द","डोकेदुखी","vomiting","ulti","उल्टी","उलटी","weakness","kamzori","कमजोरी"]
+};
+const SS_OFFLINE_NEXT_STEP = {
+  EMERGENCY: "Call Emergency SOS / 108 immediately and go to the nearest facility with emergency care.",
+  HIGH: "Visit a PHC/CHC or teleconsult today — do not wait more than a few hours.",
+  MODERATE: "Arrange a facility visit within 24–48 hours if symptoms do not improve.",
+  LOW: "Monitor symptoms at home, stay hydrated and rested; seek care if it worsens."
+};
+const SS_OFFLINE_REPLY = {
+  EMERGENCY: "These symptoms may be life-threatening. This needs emergency medical attention right now.",
+  HIGH: "These symptoms need prompt medical attention from a doctor or health worker.",
+  MODERATE: "These symptoms should be checked by a health worker soon, though they don't look immediately dangerous.",
+  LOW: "These symptoms look mild for now. Keep monitoring and rest."
+};
+function ssOfflineClassify(text){
+  const t = (text || "").toLowerCase();
+  for (const sev of ["EMERGENCY","HIGH","MODERATE"]){
+    const matched = SS_OFFLINE_KEYWORDS[sev].filter(k => t.includes(k));
+    if (matched.length){
+      const top = [...new Set(matched)].sort((a,b)=>b.length-a.length).slice(0,3);
+      return { severity: sev, matched_terms: top };
+    }
+  }
+  return { severity: "LOW", matched_terms: [] };
+}
+
+function sevColor(sev){
+  return {LOW:'#0E9E88', MODERATE:'#D98C00', HIGH:'#E63946', EMERGENCY:'#B82935'}[sev] || '#8296A2';
+}
+
+// ---------- Voice-first symptom input (Hindi / Marathi / English) ----------
+(function(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.getElementById('micBtn');
+  const micStatus = document.getElementById('micStatus');
+  const langMap = { en: 'en-IN', hi: 'hi-IN', mr: 'mr-IN' };
+  const listeningMsg = { en: 'Listening… speak now', hi: 'सुन रहा हूँ… अभी बोलें', mr: 'ऐकत आहे… आता बोला' };
+  const noSupportMsg = { en: 'Voice input not supported in this browser. Please type instead.', hi: 'इस ब्राउज़र में वॉइस इनपुट समर्थित नहीं है। कृपया टाइप करें।', mr: 'या ब्राउझरमध्ये व्हॉइस इनपुट समर्थित नाही. कृपया टाइप करा.' };
+  if(!SR){
+    micBtn.addEventListener('click', () => { micStatus.textContent = noSupportMsg[ssLang()] || noSupportMsg.en; });
+    return;
+  }
+  micBtn.addEventListener('click', () => {
+    const lang = langMap[ssLang()] || 'en-IN';
+    const r = new SR();
+    r.lang = lang; r.interimResults = false; r.maxAlternatives = 1;
+    micBtn.style.background = '#E63946'; micBtn.style.color = '#fff';
+    micStatus.textContent = listeningMsg[ssLang()] || listeningMsg.en;
+    r.onresult = e => {
+      const said = e.results[0][0].transcript;
+      symptoms.value = (symptoms.value.trim() ? symptoms.value.trim() + '. ' : '') + said;
+      micStatus.textContent = (ssLang()==='hi' ? 'आपने कहा: ' : ssLang()==='mr' ? 'तुम्ही म्हणालात: ' : 'You said: ') + said;
+      // voice-first: auto-submit once symptoms are captured by speech, patient/village optional
+      setTimeout(() => { triageForm.requestSubmit ? triageForm.requestSubmit() : triageForm.dispatchEvent(new Event('submit', {cancelable:true})); }, 400);
+    };
+    r.onerror = () => { micStatus.textContent = ssLang()==='hi' ? 'माइक्रोफ़ोन उपलब्ध नहीं — कृपया टाइप करें' : ssLang()==='mr' ? 'मायक्रोफोन उपलब्ध नाही — कृपया टाइप करा' : 'Microphone unavailable — please type instead'; };
+    r.onend = () => { micBtn.style.background = '#fff'; micBtn.style.color = '#000'; };
+    r.start();
+  });
+})();
+
+function explainText(sev, matched){
+  const l = ssLang();
+  // matched_terms missing entirely (e.g. real Ollama/MedGemma model reply, which
+  // doesn't return matched_terms) -> we have nothing honest to explain, so the
+  // caller must skip the Why box rather than showing a guessed/wrong reason.
+  if(matched === undefined || matched === null) return null;
+  if(!matched.length){
+    // Empty array = rule-based classifier genuinely found no risk phrase.
+    // Use the real `sev` here (not a hardcoded "LOW") so a mismatch can never render.
+    return l==='hi' ? `आपके बताए लक्षणों में कोई गंभीर/आपातकालीन शब्द नहीं मिला, इसलिए यह ${sev} स्तर पर है।`
+         : l==='mr' ? `तुम्ही सांगितलेल्या लक्षणांत कोणताही गंभीर/आणीबाणी शब्द आढळला नाही, म्हणून ही ${sev} पातळी आहे.`
+         : `No severe/emergency phrase was found in what you described, so this is rated ${sev}.`;
+  }
+  const terms = matched.map(m => `"${m}"`).join(', ');
+  return l==='hi' ? `आपने कहा: ${terms} — इसीलिए यह ${sev} जोखिम माना गया है।`
+       : l==='mr' ? `तुम्ही म्हणालात: ${terms} — म्हणून हे ${sev} जोखीम मानले गेले आहे.`
+       : `You mentioned: ${terms} — that's why this is rated ${sev} risk.`;
+}
+
+document.getElementById('triageForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = patientName.value.trim() || (ssLang()==='hi'?'अज्ञात मरीज':ssLang()==='mr'?'अज्ञात रुग्ण':'Unnamed patient');
+  const place = village.value.trim();
+  const symptomText = symptoms.value.trim();
+  if(!symptomText){ ssToast('Please describe the symptoms'); return; }
+
+  triageResult.innerHTML = '<i>Getting AI guidance… (a few seconds)</i>';
+  triageResult.className = 'result show';
+
+  try{
+    const r = await fetch(TRIAGE_BACKEND_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ message: (place ? `[${place}] ` : '') + symptomText })
+    });
+    if(!r.ok) throw new Error('Backend error ' + r.status);
+    const data = await r.json();
+
+    const why = explainText(data.severity, data.matched_terms);
+    const whyHtml = why ? `<p style="background:#f4f6f8;border-radius:8px;padding:8px 10px;font-size:13px"><b>${ssLang()==='hi'?'क्यों?':ssLang()==='mr'?'का?':'Why?'}</b> ${ssEsc(why)}</p>` : '';
+
+    triageResult.innerHTML = `
+      <span style="display:inline-block;padding:3px 10px;border-radius:20px;background:${sevColor(data.severity)};color:#fff;font-weight:700;font-size:12px">${ssEsc(data.severity)} RISK</span>
+      <p style="margin:10px 0;white-space:pre-wrap">${ssEsc(data.reply)}</p>
+      ${whyHtml}
+      <p><b>Next step:</b> ${ssEsc(data.next_step)}</p>
+      <small>Patient: ${ssEsc(name || '—')} · Village: ${ssEsc(place || '—')}</small>
+    `;
+
+    // Save to the longitudinal health record so it shows up in health-record.html across devices
+    try{
+      await SS_API.post('/records', { name: name, village: place, symptoms: [symptomText], severity: data.severity, guidance: data.next_step, source: 'ai-triage' });
+    }catch(e){}
+
+    if(data.severity === 'EMERGENCY' || data.severity === 'HIGH'){
+      ssToast('⚠ High urgency — consider Emergency SOS / immediate referral');
+    }else{
+      ssToast('Assessment complete');
+    }
+  }catch(err){
+    // Offline / no backend reachable — fall back to the same rule-based classifier
+    // the backend itself uses, entirely on-device, so guidance is still given.
+    const local = ssOfflineClassify(symptomText);
+    const data = { severity: local.severity, matched_terms: local.matched_terms,
+                   reply: SS_OFFLINE_REPLY[local.severity], next_step: SS_OFFLINE_NEXT_STEP[local.severity] };
+    const why = explainText(data.severity, data.matched_terms);
+    const whyHtml = why ? `<p style="background:#f4f6f8;border-radius:8px;padding:8px 10px;font-size:13px"><b>${ssLang()==='hi'?'क्यों?':ssLang()==='mr'?'का?':'Why?'}</b> ${ssEsc(why)}</p>` : '';
+    triageResult.innerHTML = `
+      <p style="background:#fff6e0;border-radius:8px;padding:7px 10px;font-size:12px;margin-bottom:8px">📴 ${ssLang()==='hi'?'ऑफ़लाइन मोड — डिवाइस पर आकलन (इंटरनेट उपलब्ध नहीं)':ssLang()==='mr'?'ऑफलाइन मोड — डिव्हाइसवर मूल्यांकन (इंटरनेट उपलब्ध नाही)':'Offline mode — assessed on this device (no internet reachable)'}</p>
+      <span style="display:inline-block;padding:3px 10px;border-radius:20px;background:${sevColor(data.severity)};color:#fff;font-weight:700;font-size:12px">${ssEsc(data.severity)} RISK</span>
+      <p style="margin:10px 0;white-space:pre-wrap">${ssEsc(data.reply)}</p>
+      ${whyHtml}
+      <p><b>Next step:</b> ${ssEsc(data.next_step)}</p>
+      <small>Patient: ${ssEsc(name || '—')} · Village: ${ssEsc(place || '—')}</small>
+    `;
+    try{ await SS_API.post('/records', { name: name, village: place, symptoms: [symptomText], severity: data.severity, guidance: data.next_step, source: 'ai-triage-offline' }); }catch(e){}
+    if(data.severity === 'EMERGENCY' || data.severity === 'HIGH'){
+      ssToast('⚠ High urgency — consider Emergency SOS / immediate referral');
+    }
+  }
+});
+</script></body></html>

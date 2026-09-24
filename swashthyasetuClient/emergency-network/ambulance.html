@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambulance Tracking — SwasthyaSetu</title>
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  .layout{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;padding:36px 0;align-items:start;}
+  .map-card{padding:0;overflow:hidden;}
+  #gmapContainer{width:100%;height:420px;background:#F8FBFC;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-size:13px}
+  .map-footer{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px}
+  .eta-big{font-family:var(--font-display);font-size:26px;color:var(--primary-dark);font-weight:700;}
+  .vitals-row{display:flex;gap:10px;margin-top:14px;}
+  .vital{flex:1;background:var(--surface-2);border-radius:10px;padding:12px;text-align:center;}
+  .vital .v{font-family:var(--font-mono);font-size:19px;font-weight:600;color:var(--primary-dark);}
+  .vital .l{font-size:10.5px;color:var(--ink-faint);margin-top:3px;}
+  .driver-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);}
+  .avatar{width:42px;height:42px;border-radius:50%;background:var(--primary-tint);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;}
+</style>
+</head>
+<body>
+
+<section class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="eyebrow">Module 05</div>
+    <h1 style="font-size:32px;margin-top:10px;">Ambulance Tracking</h1>
+    <p class="muted mt-16" style="max-width:640px;font-size:15px;">Family and hospital see the exact same live position on a real Google Map — no more "how far are you?" phone calls mid-transit.</p>
+  </div>
+</section>
+
+<div class="container layout">
+  <div class="card map-card">
+    <div id="gmapContainer">Loading map…</div>
+    <div class="map-footer">
+      <div>
+        <div class="faint mono" style="font-size:11px;">ETA TO HOSPITAL</div>
+        <div class="eta-big" id="etaBig">—</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="faint mono" style="font-size:11px;">DISTANCE COVERED</div>
+        <div style="font-family:var(--font-mono);font-weight:600;" id="distCovered">—</div>
+      </div>
+      <span class="pill pill-alert" id="tripStatus">En route to patient</span>
+    </div>
+    <div style="padding:0 20px 16px">
+      <a id="directionsLink" class="btn btn-outline btn-sm" href="#" target="_blank" rel="noopener">🧭 Open live navigation in Google Maps</a>
+    </div>
+  </div>
+
+  <div>
+    <div class="card card-pad">
+      <div class="flex-between">
+        <h3 style="font-size:15.5px;">Unit JH01-AMB-2214</h3>
+        <span class="pill pill-ok">ALS Equipped</span>
+      </div>
+      <p class="faint" style="font-size:12px;margin-top:6px">Heading to: <b id="hospitalName">—</b></p>
+      <div class="driver-row mt-16">
+        <div class="avatar">SO</div>
+        <div><b style="font-size:14px;">Suresh Oraon</b><p class="faint" style="font-size:12px;">Driver-paramedic · 8 yrs experience</p></div>
+      </div>
+      <div class="driver-row" style="border-bottom:none;">
+        <a href="tel:+919876543210" class="btn btn-outline btn-sm">Call driver</a>
+        <a href="tel:108" class="btn btn-ghost btn-sm">Call control room</a>
+      </div>
+
+      <hr class="divider">
+      <h4 style="font-size:13.5px;">Live vitals feed (from onboard monitor)</h4>
+      <div class="vitals-row">
+        <div class="vital"><div class="v" id="vHr">—</div><div class="l">Heart rate (bpm)</div></div>
+        <div class="vital"><div class="v" id="vBp">—</div><div class="l">Blood pressure</div></div>
+        <div class="vital"><div class="v" id="vSpo2">—</div><div class="l">SpO₂ (%)</div></div>
+      </div>
+      <p class="faint mt-16" style="font-size:11.5px;">Vitals stream to the receiving hospital in real time, so the ER team is prepped before arrival.</p>
+      <div id="ambMapsKey" style="margin-top:14px"></div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shared.js"></script>
+<script src="../assets/gmaps.js"></script>
+<script>
+rsInitShell('ambulance.html');
+
+document.getElementById('ambMapsKey').innerHTML = SS_MAPS.keyWidgetHTML('amb');
+SS_MAPS.bindKeyWidget('amb', ()=>{ ssToastSafe(); initMap(); });
+function ssToastSafe(){ try{ rsToast('Google Maps', SS_MAPS.hasKey()?'Key saved — live tracking on next load':'Key cleared', 'ok'); }catch(e){} }
+
+// Destination hospital is now resolved dynamically to whichever facility is actually
+// nearest to the patient's live location — it used to be hardcoded to Tata Main
+// Hospital's approximate coords, so the ambulance always "went" there even when the
+// patient was nowhere near it, and the map pin near those approximate coords could
+// snap to an unrelated nearby landmark instead of the hospital itself.
+let HOSPITAL = { name: 'Tata Main Hospital', address: 'C Road, Bistupur, Jamshedpur, Jharkhand, India', lat: 22.8080, lng: 86.1853 };
+const DEMO_PICKUP = { lat: 22.8150, lng: 86.2050 }; // demo "accident site" near Jamshedpur if geolocation is unavailable
+
+async function resolveNearestHospital(pickup){
+  try{
+    if(SS_MAPS.hasKey()){
+      const list = await SS_MAPS.findNearestHospitals(pickup.lat, pickup.lng, {limit:1});
+      if(list && list.length) return { name:list[0].name, address:list[0].address, lat:list[0].lat, lng:list[0].lng };
+    }
+  }catch(e){ /* fall through to backend list */ }
+  try{
+    const API_BASE = (window.SS_API && SS_API.BASE) || 'http://127.0.0.1:5000';
+    const r = await fetch(`${API_BASE}/facilities/nearest?lat=${pickup.lat}&lng=${pickup.lng}`);
+    if(r.ok){
+      const rows = await r.json();
+      if(rows && rows.length) return { name:rows[0].name, address:rows[0].address, lat:rows[0].lat, lng:rows[0].lng };
+    }
+  }catch(e){ /* keep the default HOSPITAL as last resort */ }
+  return HOSPITAL;
+}
+
+let timer = null;
+
+function setVitals(elapsed){
+  document.getElementById('vHr').textContent = (86 + Math.round(Math.sin(elapsed/9)*6));
+  document.getElementById('vBp').textContent = '118/76';
+  document.getElementById('vSpo2').textContent = (96 + Math.round(Math.sin(elapsed/13)*2));
+}
+
+function arrived(){
+  document.getElementById('tripStatus').textContent = 'Arrived at hospital';
+  document.getElementById('tripStatus').className = 'pill pill-ok';
+  clearInterval(timer);
+  rsToast('Ambulance arrived', 'Patient handed off to ' + HOSPITAL.name + ' ER team.', 'ok');
+}
+
+// Fallback: keyless real Google Map (no API key needed) + simulated progress numbers.
+function runEmbedMap(pickup){
+  document.getElementById('gmapContainer').innerHTML =
+    `<iframe src="${SS_MAPS.embedUrl(pickup, HOSPITAL)}" width="100%" height="420" style="border:0;display:block" loading="lazy"></iframe>`;
+  const totalSeconds = 9*60, totalKm = 3.1;
+  let elapsed = 0;
+  document.getElementById('etaBig').textContent = '9 min';
+  document.getElementById('distCovered').textContent = '0.0 / 3.1 km';
+  timer = setInterval(()=>{
+    elapsed += 5;
+    const progress = Math.min(1, elapsed/totalSeconds);
+    const remaining = Math.max(0, Math.round((totalSeconds-elapsed)/60));
+    document.getElementById('etaBig').textContent = remaining<=0 ? 'Arriving' : remaining+' min';
+    document.getElementById('distCovered').textContent = (progress*totalKm).toFixed(1)+' / '+totalKm+' km';
+    setVitals(elapsed);
+    if(progress>=1) arrived();
+  }, 900);
+}
+
+// Live mode (Google Maps API key set): real driving route + a marker animated along
+// the ACTUAL road polyline returned by the Directions API, real ETA/distance.
+async function runLiveMap(pickup){
+  const maps = await SS_MAPS.loadGoogleMaps();
+  const el = document.getElementById('gmapContainer');
+  el.textContent = '';
+  const map = new maps.Map(el, { center: pickup, zoom: 13 });
+  const directionsService = new maps.DirectionsService();
+  const directionsRenderer = new maps.DirectionsRenderer({ map, suppressMarkers: false });
+  const result = await new Promise((resolve, reject)=>{
+    directionsService.route({ origin: pickup, destination: HOSPITAL, travelMode: 'DRIVING' }, (res, status)=>{
+      if(status === 'OK') resolve(res); else reject(new Error(status));
+    });
+  });
+  directionsRenderer.setDirections(result);
+  const leg = result.routes[0].legs[0];
+  const totalSeconds = leg.duration.value;
+  const totalKm = leg.distance.value / 1000;
+  document.getElementById('etaBig').textContent = leg.duration.text;
+  document.getElementById('distCovered').textContent = '0.0 / ' + leg.distance.text;
+
+  const path = [];
+  leg.steps.forEach(s => s.path.forEach(p => path.push(p)));
+  const ambMarker = new maps.Marker({
+    map, position: path[0],
+    icon: { path: maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#E63946', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
+  });
+
+  let elapsed = 0;
+  timer = setInterval(()=>{
+    elapsed += 5;
+    const progress = Math.min(1, elapsed/totalSeconds);
+    const idx = Math.min(path.length-1, Math.floor(progress*(path.length-1)));
+    ambMarker.setPosition(path[idx]);
+    map.panTo(path[idx]);
+    const remaining = Math.max(0, Math.round((totalSeconds-elapsed)/60));
+    document.getElementById('etaBig').textContent = remaining<=0 ? 'Arriving' : remaining+' min';
+    document.getElementById('distCovered').textContent = (progress*totalKm).toFixed(1)+' / '+totalKm.toFixed(1)+' km';
+    setVitals(elapsed);
+    if(progress>=1) arrived();
+  }, 900);
+}
+
+async function initMap(){
+  if(timer) clearInterval(timer);
+  document.getElementById('tripStatus').textContent = 'En route to patient';
+  document.getElementById('tripStatus').className = 'pill pill-alert';
+
+  let pickup = DEMO_PICKUP;
+  try{
+    if(navigator.geolocation){
+      pickup = await new Promise(resolve=>{
+        navigator.geolocation.getCurrentPosition(
+          pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          () => resolve(DEMO_PICKUP),
+          { timeout: 6000 }
+        );
+      });
+    }
+  }catch(e){ pickup = DEMO_PICKUP; }
+
+  HOSPITAL = await resolveNearestHospital(pickup);
+  document.getElementById('hospitalName').textContent = HOSPITAL.name;
+  document.getElementById('directionsLink').href = SS_MAPS.directionsUrl(pickup, HOSPITAL);
+
+  if(SS_MAPS.hasKey()){
+    try{ await runLiveMap(pickup); return; }
+    catch(e){ console.warn('Live Google Maps tracking failed, showing keyless map instead:', e); }
+  }
+  runEmbedMap(pickup);
+}
+
+initMap();
+</script>
+</body>
+</html>

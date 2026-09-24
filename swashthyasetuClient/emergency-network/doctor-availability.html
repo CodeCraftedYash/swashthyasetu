@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doctor Availability — SwasthyaSetu</title>
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;}
+  .toolbar select, .toolbar input{border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:13.5px;background:#fff;}
+  .toolbar input{flex:1;min-width:220px;}
+  .doc-card{padding:20px;display:flex;align-items:center;gap:16px;}
+  .avatar{width:46px;height:46px;border-radius:50%;background:var(--primary-tint);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;flex-shrink:0;}
+  .doc-main{flex:1;}
+  .doc-main h4{font-size:15px;}
+  .doc-main .meta{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .doc-side{text-align:right;min-width:150px;}
+  .doc-side .slot{font-family:var(--font-mono);font-size:13px;margin-top:6px;}
+  .list{display:flex;flex-direction:column;gap:12px;margin-top:20px;}
+</style>
+</head>
+<body><section class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="eyebrow">Module 07</div>
+    <h1 style="font-size:32px;margin-top:10px;">Doctor Availability</h1>
+    <p class="muted mt-16" style="max-width:640px;font-size:15px;">See who's free right now, across every hospital on the network — patients get this view, staff get the same one to keep it honest.</p>
+
+    <div class="toolbar">
+      <input id="search" placeholder="Search doctor name or department…">
+      <select id="hospFilter"><option value="">All hospitals</option></select>
+      <select id="statFilter">
+        <option value="">Any status</option>
+        <option value="available">Available now</option>
+        <option value="in-surgery">In surgery</option>
+        <option value="busy">Busy</option>
+        <option value="on-leave">On leave</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<section class="container mt-24" id="quickDemo"><div class="card card-pad"><div class="eyebrow">FAST ACCESS • DEMO</div><h3 style="margin-top:8px;">Tap a demo doctor for faster access</h3><p class="faint mt-8">Simulated demo data — available without typing in search.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:16px;"><button class="card" type="button" style="text-align:left;padding:16px;cursor:pointer;border:1px solid var(--border);" onclick="document.getElementById('search').value='Dr. Ananya Singh';render();window.scrollTo({top:document.querySelector('section.container').offsetTop,behavior:'smooth'})"><b>Dr. Ananya Singh</b><div class="faint" style="font-size:12px;margin-top:5px;">General Medicine</div><div class="pill pill-ok" style="margin-top:10px;display:inline-flex;">Available now</div></button><button class="card" type="button" style="text-align:left;padding:16px;cursor:pointer;border:1px solid var(--border);" onclick="document.getElementById('search').value='Dr. Rahul Verma';render();window.scrollTo({top:document.querySelector('section.container').offsetTop,behavior:'smooth'})"><b>Dr. Rahul Verma</b><div class="faint" style="font-size:12px;margin-top:5px;">Cardiology</div><div class="pill pill-ok" style="margin-top:10px;display:inline-flex;">Next slot: 10 min</div></button><button class="card" type="button" style="text-align:left;padding:16px;cursor:pointer;border:1px solid var(--border);" onclick="document.getElementById('search').value='Dr. Priya Kumari';render();window.scrollTo({top:document.querySelector('section.container').offsetTop,behavior:'smooth'})"><b>Dr. Priya Kumari</b><div class="faint" style="font-size:12px;margin-top:5px;">Paediatrics</div><div class="pill pill-ok" style="margin-top:10px;display:inline-flex;">Available now</div></button></div></div></section>
+<section class="container">
+  <div class="list" id="docList"></div>
+</section>
+
+<script src="assets/shared.js"></script>
+<script>
+rsInitShell('doctor-availability.html');
+
+document.getElementById('hospFilter').innerHTML += RS_HOSPITALS.map(h=>`<option value="${h.id}">${h.name}</option>`).join('');
+
+const statusMeta = {
+  'available': {label:'Available now', pill:'pill-ok'},
+  'in-surgery': {label:'In surgery', pill:'pill-warn'},
+  'busy': {label:'Busy with patient', pill:'pill-warn'},
+  'on-leave': {label:'On leave', pill:'pill-muted'},
+};
+
+function hospName(id){ return (RS_HOSPITALS.find(h=>h.id===id)||{}).name || id; }
+function initials(name){ return name.replace('Dr. ','').split(' ').map(w=>w[0]).join('').slice(0,2); }
+
+function render(){
+  const q = document.getElementById('search').value.toLowerCase();
+  const hf = document.getElementById('hospFilter').value;
+  const sf = document.getElementById('statFilter').value;
+
+  const list = RS_DOCTORS
+    .filter(d => (d.name+d.dept).toLowerCase().includes(q))
+    .filter(d => !hf || d.hospital === hf)
+    .filter(d => !sf || d.status === sf);
+
+  document.getElementById('docList').innerHTML = list.map(d => {
+    const sm = statusMeta[d.status];
+    return `<div class="card doc-card">
+      <div class="avatar">${initials(d.name)}</div>
+      <div class="doc-main">
+        <h4>${d.name} <span class="badge-dept" style="margin-left:6px;">${d.dept}</span></h4>
+        <div class="meta">${hospName(d.hospital)}</div>
+      </div>
+      <div class="doc-side">
+        <span class="pill ${sm.pill}">${sm.label}</span>
+        <div class="slot">${d.status==='available' ? 'Token #'+d.servingToken+' now' : 'Next free: '+d.nextFreeSlot}</div>
+        ${d.status==='available' ? `<button class="btn btn-primary btn-sm mt-8" onclick="bookSlot('${d.id}')">Book next token</button>` : ''}
+      </div>
+    </div>`;
+  }).join('') || '<div class="card card-pad">No doctors match those filters.</div>';
+}
+
+function bookSlot(id){
+  const d = RS_DOCTORS.find(x=>x.id===id);
+  d.servingToken += 1;
+  rsToast('Token booked', `You're token #${d.servingToken} with ${d.name}`, 'ok');
+  render();
+}
+
+['search','hospFilter','statFilter'].forEach(id=>document.getElementById(id).addEventListener('input', render));
+render();
+</script>
+</body>
+</html>

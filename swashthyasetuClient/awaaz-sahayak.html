@@ -1,0 +1,320 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwasthyaSetu</title><link rel="stylesheet" href="assets/styles.css">
+<style>
+.vv-wrap{max-width:520px;margin:0 auto;text-align:center;padding:10px 6px 40px}
+.vv-mic{width:150px;height:150px;border-radius:50%;border:none;background:linear-gradient(160deg,#E63946,#B82935);color:#fff;font-size:54px;box-shadow:0 10px 30px rgba(230,57,70,.35);cursor:pointer;transition:transform .15s}
+.vv-mic:active{transform:scale(.96)}
+.vv-mic.listening{animation:vvPulse 1.1s infinite}
+.vv-mic.speaking{background:linear-gradient(160deg,#0E9E88,#0b7c6b);animation:vvPulse 1.6s infinite}
+@keyframes vvPulse{0%{box-shadow:0 0 0 0 rgba(230,57,70,.45)}70%{box-shadow:0 0 0 26px rgba(230,57,70,0)}100%{box-shadow:0 0 0 0 rgba(230,57,70,0)}}
+.vv-status{font-size:20px;font-weight:700;margin:18px 0 6px;min-height:30px}
+.vv-sub{color:var(--muted);font-size:15px;min-height:22px}
+.vv-card{background:#fff;border-radius:16px;padding:20px;margin-top:22px;box-shadow:0 4px 18px rgba(0,0,0,.08);text-align:left}
+.vv-token{font-size:56px;font-weight:800;color:#0E9E88;text-align:center;margin:6px 0}
+.vv-steps{display:flex;justify-content:center;gap:8px;margin:16px 0}
+.vv-dot{width:10px;height:10px;border-radius:50%;background:#e2e8ec}
+.vv-dot.on{background:#E63946}
+.vv-replay{margin-top:14px}
+</style>
+</head><body>
+<script src="assets/shared.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/gmaps.js"></script>
+<script>ssPage('awaaz-sahayak.html', `
+<div class="page-head"><div><h1 data-en="Voice Assistant — Find Hospital &amp; Book Token" data-hi="आवाज़ सहायक — अस्पताल खोजें और टोकन बनाएं" data-mr="आवाज सहाय्यक — रुग्णालय शोधा आणि टोकन बनवा">Voice Assistant — Find Hospital &amp; Book Token</h1><p data-en="For everyone — just speak, no typing or reading needed." data-hi="सबके लिए — बस बोलिए, टाइप या पढ़ने की जरूरत नहीं।" data-mr="सर्वांसाठी — फक्त बोला, टाइप किंवा वाचण्याची गरज नाही.">For everyone — just speak, no typing or reading needed.</p></div><span class="badge">● <span data-en="Voice First" data-hi="वॉइस फर्स्ट" data-mr="व्हॉइस फर्स्ट">Voice First</span></span></div>
+<div class="vv-wrap">
+  <div class="vv-steps" id="vvSteps"></div>
+  <button id="vvMic" class="vv-mic" aria-label="Start">🎤</button>
+  <div class="vv-status" id="vvStatus">बटन दबाएं और बोलना शुरू करें</div>
+  <div class="vv-sub" id="vvSub">Tap the big button to begin</div>
+  <div id="vvResult"></div>
+  <div id="vvMapWrap"></div>
+  <div class="vv-replay"><button class="btn outline" id="vvRepeat" style="display:none" data-en="🔁 Repeat" data-hi="🔁 फिर से सुनें" data-mr="🔁 पुन्हा ऐका">🔁 Repeat</button> <button class="btn outline" id="vvTest">🔊 Test sound</button></div>
+  <div id="vvDiag" style="font-size:11px;color:var(--muted);margin-top:8px"></div>
+  <div id="vvMapsKey"></div>
+</div>
+`);
+document.getElementById('vvMapsKey').innerHTML = SS_MAPS.keyWidgetHTML('vv');
+SS_MAPS.bindKeyWidget('vv', ()=> ssToast(SS_MAPS.hasKey() ? 'Google Maps key saved — live hospital search is on' : 'Key cleared'));
+</script>
+<script>
+(function(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.getElementById('vvMic');
+  const statusEl = document.getElementById('vvStatus');
+  const subEl = document.getElementById('vvSub');
+  const resultEl = document.getElementById('vvResult');
+  const repeatBtn = document.getElementById('vvRepeat');
+  const stepsEl = document.getElementById('vvSteps');
+  const LANG_MAP = {en:'en-IN', hi:'hi-IN', mr:'mr-IN'};
+
+  const STEPS = ['name','locate','confirm','done'];
+  function setStep(key){
+    stepsEl.innerHTML = STEPS.map(s=>`<span class="vv-dot ${STEPS.indexOf(s)<=STEPS.indexOf(key)?'on':''}"></span>`).join('');
+  }
+  setStep('name');
+
+  // ---- state ----
+  let state = 'idle';
+  let patientName = '';
+  let facilities = [];
+  let chosen = null;
+  let lastPrompt = '';
+  let userLoc = null;
+
+  function L(){ return LANG_MAP[ssLang()] || 'en-IN'; }
+
+  function T(en,hi,mr){ const l=ssLang(); return l==='hi'?hi:l==='mr'?mr:en; }
+
+  function speak(text, onDone){
+    lastPrompt = text;
+    repeatBtn.style.display = 'inline-block';
+    subEl.textContent = text;
+    micBtn.classList.remove('listening');
+    micBtn.classList.add('speaking');
+    if(!('speechSynthesis' in window)){ micBtn.classList.remove('speaking'); if(onDone) onDone(); return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.93;
+    const wantLang = L();
+    let done = false;
+    const finish = ()=>{ if(done) return; done = true; micBtn.classList.remove('speaking'); if(onDone) onDone(); };
+    u.onend = finish; u.onerror = finish;
+    setTimeout(finish, Math.max(4000, text.length*90));
+    let spoken = false;
+    function doSpeak(){
+      if(spoken) return; // guard: voiceschanged AND the 300ms fallback timer can both fire — without this, every line was queued and spoken twice
+      spoken = true;
+      try{ speechSynthesis.resume(); }catch(e){}
+      const voices = speechSynthesis.getVoices();
+      const v = voices.find(v=>v.lang===wantLang) || voices.find(v=>v.lang && v.lang.toLowerCase().startsWith(ssLang()));
+      if(v){ u.voice=v; u.lang=v.lang; } else { u.lang='en-US'; }
+      window.__ssLastVoiceCount = voices.length;
+      speechSynthesis.speak(u);
+      setTimeout(()=>{ try{ speechSynthesis.resume(); }catch(e){} }, 60);
+    }
+    if(speechSynthesis.getVoices().length===0){
+      speechSynthesis.addEventListener('voiceschanged', doSpeak, {once:true});
+      setTimeout(doSpeak, 300);
+    } else { doSpeak(); }
+  }
+
+  repeatBtn.onclick = ()=> speak(lastPrompt);
+
+  function listen(onResult, onFail){
+    if(!SR){
+      speak(T('Voice input is not supported in this browser. Please use Chrome.',
+              'इस ब्राउज़र में वॉइस इनपुट समर्थित नहीं है। कृपया Chrome इस्तेमाल करें।',
+              'या ब्राउझरमध्ये व्हॉइस इनपुट समर्थित नाही. कृपया Chrome वापरा.'));
+      return;
+    }
+    const r = new SR();
+    r.lang = L(); r.interimResults = false; r.maxAlternatives = 1;
+    micBtn.classList.add('listening');
+    statusEl.textContent = T('Listening… speak now','सुन रहा हूँ… अभी बोलें','ऐकत आहे… आता बोला');
+    let got = false;
+    r.onresult = e => { got = true; micBtn.classList.remove('listening'); onResult(e.results[0][0].transcript); };
+    r.onerror = e => {
+      got = true; micBtn.classList.remove('listening');
+      const msg = e.error==='not-allowed' ? T('Microphone permission blocked. Please allow mic access.','माइक्रोफ़ोन की अनुमति ब्लॉक है। कृपया अनुमति दें।','मायक्रोफोन परवानगी अवरोधित आहे. कृपया परवानगी द्या.')
+                : T('Could not hear anything. Tap the mic and try again.','कुछ सुनाई नहीं दिया। माइक दबाकर फिर कोशिश करें।','काही ऐकू आले नाही. मायक्रोफोन दाबून पुन्हा प्रयत्न करा.');
+      statusEl.textContent = msg;
+      if(onFail) onFail(msg); else speak(msg);
+    };
+    r.onend = ()=>{ micBtn.classList.remove('listening'); if(!got && onFail) onFail(); };
+    try{ r.start(); }catch(e){ micBtn.classList.remove('listening'); }
+  }
+
+  function haversine(lat1,lng1,lat2,lng2){
+    const R=6371, toRad = d=>d*Math.PI/180;
+    const dLat=toRad(lat2-lat1), dLng=toRad(lng2-lng1);
+    const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+    return R*2*Math.asin(Math.sqrt(a));
+  }
+
+  function yesNo(text){
+    const t=(text||'').toLowerCase();
+    if(/\b(haan|han|ha|yes|ok|theek|thik|correct|bilkul|हां|हाँ|ठीक|होय|बरोबर)\b/.test(t)) return true;
+    if(/\b(nahi|nahin|no|nope|नहीं|नाही)\b/.test(t)) return false;
+    return null;
+  }
+
+  // ---------------- flow ----------------
+  function start(){
+    setStep('name');
+    statusEl.textContent = T('Tell me your name','अपना नाम बताइए','तुमचे नाव सांगा');
+    speak(T('Hello! Welcome to SwasthyaSetu. Tell me your name.',
+            'नमस्ते! स्वास्थ्यसेतु में आपका स्वागत है। सबसे पहले अपना नाम बोलिए।',
+            'नमस्कार! स्वास्थ्यसेतूमध्ये आपले स्वागत आहे. आधी तुमचे नाव सांगा.'), askName);
+  }
+
+  function askName(){
+    listen(name => {
+      patientName = name.trim();
+      resultEl.innerHTML = `<div class="vv-card"><b>${T('Name','नाम','नाव')}:</b> ${ssEsc(patientName)}</div>`;
+      askLocation();
+    }, ()=> speak(T('I could not hear your name. Tap the mic and say it again.','मुझे आपका नाम सुनाई नहीं दिया। माइक दबाकर फिर से बोलें।','मला तुमचे नाव ऐकू आले नाही. मायक्रोफोन दाबून पुन्हा सांगा.'), askName));
+  }
+
+  function askLocation(){
+    setStep('locate');
+    speak(T(`Thank you, ${patientName}. Now I will find your location — please allow location access.`,
+            `धन्यवाद, ${patientName}। अब मैं आपकी जगह पता कर रहा हूं — कृपया लोकेशन की अनुमति दें।`,
+            `धन्यवाद, ${patientName}. आता मी तुमचे स्थान शोधत आहे — कृपया लोकेशन परवानगी द्या.`), () => {
+      statusEl.textContent = T('Finding your location…','आपकी लोकेशन ढूंढ रहे हैं…','तुमचे स्थान शोधत आहोत…');
+      if(!navigator.geolocation){ askVillageFallback(); return; }
+      navigator.geolocation.getCurrentPosition(
+        pos => findNearest(pos.coords.latitude, pos.coords.longitude),
+        () => askVillageFallback(),
+        {timeout: 10000}
+      );
+    });
+  }
+
+  function askVillageFallback(){
+    speak(T('Location was not available. Please say the name of your village or area.',
+            'लोकेशन नहीं मिली। कृपया अपने गांव या इलाके का नाम बोलिए।',
+            'स्थान मिळाले नाही. कृपया तुमच्या गाव किंवा भागाचे नाव सांगा.'), () => {
+      listen(async place => {
+        try{
+          const fs = await SS_API.get('/facilities');
+          facilities = fs;
+        }catch(e){ facilities = []; }
+        // no coordinates to sort by distance — just take the whole list, closest by demo distanceKm
+        facilities.sort((a,b)=>(a.distanceKm||99)-(b.distanceKm||99));
+        offerNearest();
+      }, askVillageFallback);
+    });
+  }
+
+  async function findNearest(lat, lng){
+    userLoc = {lat, lng};
+    statusEl.textContent = T('Searching real hospitals near you…','आपके पास असली अस्पताल खोज रहे हैं…','तुमच्या जवळ खरी रुग्णालये शोधत आहोत…');
+    // Prefer LIVE Google Places hospital search (real, not just our demo list) when a Maps API key is set.
+    if(SS_MAPS.hasKey()){
+      try{
+        facilities = await SS_MAPS.findNearestHospitals(lat, lng, {limit:5});
+        if(facilities.length){ offerNearest(); return; }
+      }catch(e){ /* fall through to backend */ }
+    }
+    try{
+      facilities = await SS_API.get(`/facilities/nearest?lat=${lat}&lng=${lng}`);
+    }catch(e){
+      try{ facilities = await SS_API.get('/facilities'); facilities.sort((a,b)=>(a.distanceKm||99)-(b.distanceKm||99)); }
+      catch(e2){ facilities = []; }
+    }
+    offerNearest();
+  }
+
+  function renderMap(dest){
+    const wrap = document.getElementById('vvMapWrap');
+    if(!userLoc || !dest || dest.lat==null){ wrap.innerHTML=''; return; }
+    const src = SS_MAPS.embedUrl(userLoc, {lat:dest.lat, lng:dest.lng});
+    const link = SS_MAPS.directionsUrl(userLoc, {lat:dest.lat, lng:dest.lng});
+    wrap.innerHTML = `<div class="vv-card" style="padding:0;overflow:hidden">
+      <iframe src="${src}" width="100%" height="220" style="border:0;display:block" loading="lazy"></iframe>
+      <div style="padding:10px 14px"><a class="btn outline btn-sm" href="${link}" target="_blank" rel="noopener">🧭 ${T('Open live directions in Google Maps','गूगल मैप्स में लाइव दिशा खोलें','गूगल मॅप्समध्ये लाइव्ह दिशा उघडा')}</a></div>
+    </div>`;
+  }
+
+  async function offerNearest(){
+    setStep('confirm');
+    if(!facilities.length){
+      speak(T('Sorry, I could not find any hospital right now. Please try again.','माफ कीजिए, अभी कोई अस्पताल नहीं मिला। कृपया फिर कोशिश करें।','माफ करा, आत्ता कोणतेही रुग्णालय सापडले नाही. कृपया पुन्हा प्रयत्न करा.'), start);
+      return;
+    }
+    chosen = facilities[0];
+    resultEl.innerHTML += `<div class="vv-card"><b>${T('Nearest hospital','सबसे नज़दीक अस्पताल','सर्वात जवळचे रुग्णालय')}${chosen.source==='google'?' 📍 Google':''}:</b> ${ssEsc(chosen.name)}<br><small>${ssEsc(chosen.address||'')} · ${chosen.distanceKm} km</small></div>`;
+    renderMap(chosen);
+    let distText = `${chosen.distanceKm} ${T('kilometers','किलोमीटर','किलोमीटर')}`;
+    if(SS_MAPS.hasKey()){
+      try{ const d = await SS_MAPS.drivingInfo(userLoc, {lat:chosen.lat, lng:chosen.lng});
+        distText = T(`${d.distanceText}, about ${d.durationText} by road`, `${d.distanceText}, सड़क से लगभग ${d.durationText}`, `${d.distanceText}, रस्त्याने सुमारे ${d.durationText}`); }catch(e){}
+    }
+    const msg = T(`Your nearest hospital is ${chosen.name}, ${distText} away. Should I book your token there? Say yes or no.`,
+                  `आपके सबसे नज़दीक ${chosen.name} है, ${distText} दूर। क्या मैं वहां आपका टोकन बना दूं? हां या ना बोलिए।`,
+                  `तुमच्या सर्वात जवळ ${chosen.name} आहे, ${distText} दूर. मी तिथे तुमचा टोकन बनवू का? होय किंवा नाही सांगा.`);
+    speak(msg, confirmChoice);
+  }
+
+  function confirmChoice(){
+    listen(text => {
+      const yn = yesNo(text);
+      if(yn === true){ bookToken(); }
+      else if(yn === false){ offerNext(); }
+      else {
+        speak(T('Sorry, please say yes or no.','माफ कीजिए, कृपया हां या ना बोलें।','माफ करा, कृपया होय किंवा नाही सांगा.'), confirmChoice);
+      }
+    }, ()=> speak(T('Please say yes or no.','कृपया हां या ना बोलें।','कृपया होय किंवा नाही सांगा.'), confirmChoice));
+  }
+
+  function offerNext(){
+    const idx = facilities.indexOf(chosen);
+    if(idx < facilities.length - 1){
+      chosen = facilities[idx+1];
+      resultEl.innerHTML += `<div class="vv-card"><b>${T('Next nearest','अगला नज़दीक','पुढील जवळचे')}:</b> ${ssEsc(chosen.name)}<br><small>${ssEsc(chosen.address||'')} · ${chosen.distanceKm} km</small></div>`;
+      renderMap(chosen);
+      speak(T(`Okay. Next nearest is ${chosen.name}, about ${chosen.distanceKm} kilometers. Should I book here? Say yes or no.`,
+              `ठीक है। अगला नज़दीक ${chosen.name} है, लगभग ${chosen.distanceKm} किलोमीटर। क्या यहां टोकन बना दूं? हां या ना बोलिए।`,
+              `ठीक आहे. पुढील जवळचे ${chosen.name} आहे, सुमारे ${chosen.distanceKm} किलोमीटर. इथे टोकन बनवू का? होय किंवा नाही सांगा.`), confirmChoice);
+    } else {
+      speak(T('No more nearby hospitals found. Ending here — you can try again anytime.','कोई और नज़दीकी अस्पताल नहीं मिला। यहां रोकते हैं — आप कभी भी फिर कोशिश कर सकते हैं।','जवळचे आणखी रुग्णालय सापडले नाही. इथे थांबतो — तुम्ही कधीही पुन्हा प्रयत्न करू शकता.'));
+    }
+  }
+
+  async function bookToken(){
+    statusEl.textContent = T('Booking your token…','आपका टोकन बनाया जा रहा है…','तुमचा टोकन बनवत आहोत…');
+    try{
+      const tok = await SS_API.post('/tokens', {
+        patientName, facilityId: chosen.id, facilityName: chosen.name, facilityAddress: chosen.address
+      });
+      setStep('done');
+      resultEl.innerHTML += `<div class="vv-card"><div style="text-align:center"><small>${T('YOUR TOKEN NUMBER','आपका टोकन नंबर','तुमचा टोकन क्रमांक')}</small><div class="vv-token">#${ssEsc(tok.tokenNumber)}</div><b>${ssEsc(chosen.name)}</b><br><small>${ssEsc(chosen.address||'')}</small></div></div>`;
+      speak(T(`Done! Your token number is ${tok.tokenNumber} at ${chosen.name}. Please show this number when you arrive. Thank you.`,
+              `हो गया! आपका टोकन नंबर ${tok.tokenNumber} है, ${chosen.name} में। वहां पहुंचकर यह नंबर बताइए। धन्यवाद।`,
+              `झाले! तुमचा टोकन क्रमांक ${tok.tokenNumber} आहे, ${chosen.name} येथे. तिथे पोहोचल्यावर हा क्रमांक सांगा. धन्यवाद.`), askAnythingElse);
+      statusEl.textContent = T('Token booked ✓','टोकन बन गया ✓','टोकन बनवला ✓');
+    }catch(e){
+      speak(T('Sorry, booking failed. Please try again.','माफ कीजिए, टोकन नहीं बन पाया। फिर कोशिश करें।','माफ करा, टोकन बनला नाही. पुन्हा प्रयत्न करा.'));
+    }
+  }
+
+  // ---- keep talking after the booking is done: route by voice to any other part
+  // of the app instead of just ending the conversation here. ----
+  function askAnythingElse(){
+    speak(T('Do you need anything else? Say — my history, ambulance, or another hospital. Or say no to finish.',
+            'क्या आपको कुछ और चाहिए? बोलिए — मेरा इतिहास, एम्बुलेंस, या दूसरा अस्पताल। खत्म करने के लिए नहीं बोलिए।',
+            'तुम्हाला आणखी काही हवे आहे का? बोला — माझा इतिहास, रुग्णवाहिका, किंवा दुसरे रुग्णालय. संपवण्यासाठी नाही म्हणा.'), () => {
+      listen(text => {
+        const t = (text||'').toLowerCase();
+        if(/history|itihas|record|इतिहास|रिकॉर्ड|रिपोर्ट/.test(t)){
+          speak(T('Opening your history.','आपका इतिहास खोल रहा हूं।','तुमचा इतिहास उघडत आहे.'), () => location.href = 'my-health-history.html?name=' + encodeURIComponent(patientName));
+        } else if(/ambulance|एम्बुलेंस|रुग्णवाहिका/.test(t)){
+          speak(T('Opening ambulance.','एम्बुलेंस खोल रहा हूं।','रुग्णवाहिका उघडत आहे.'), () => location.href = 'emergency-network/ambulance.html');
+        } else if(/hospital|अस्पताल|रुग्णालय/.test(t)){
+          offerNext();
+        } else {
+          speak(T('Okay, thank you! Tap the mic anytime to talk again.','ठीक है, धन्यवाद! फिर बात करने के लिए कभी भी माइक दबाएं।','ठीक आहे, धन्यवाद! पुन्हा बोलण्यासाठी कधीही मायक्रोफोन दाबा.'));
+        }
+      }, () => speak(T('Okay, thank you!','ठीक है, धन्यवाद!','ठीक आहे, धन्यवाद!')));
+    });
+  }
+
+  micBtn.addEventListener('click', () => {
+    if(state === 'idle'){ state = 'running'; start(); }
+    else { start(); } // tap again anytime to restart the flow
+  });
+
+  document.getElementById('vvTest').addEventListener('click', () => {
+    const diag = document.getElementById('vvDiag');
+    if(!('speechSynthesis' in window)){ diag.textContent = 'This browser has no speech support at all — try Chrome.'; return; }
+    diag.textContent = 'Playing test sound…';
+    speak('Testing, one two three. Agar yeh sunai de raha hai to awaaz theek hai.', () => {
+      const n = window.__ssLastVoiceCount ?? speechSynthesis.getVoices().length;
+      diag.textContent = `Voices available: ${n}. ` + (n===0
+        ? 'Zero voices = this device has no Text-to-Speech installed — enable "Google Text-to-Speech" in Android settings, or test on Chrome desktop with internet. Also check media volume is not muted / phone not on silent.'
+        : 'If you still heard nothing, check media volume (not ringer volume) and silent/DND mode.');
+    });
+  });
+})();
+</script>
+</body></html>

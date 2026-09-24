@@ -1,0 +1,48 @@
+SwasthyaSetu — How to run (with real backend)
+
+1) Start the backend (Flask + SQLite):
+     cd backend
+     pip install -r requirements.txt
+     python app.py
+   This starts the API on http://127.0.0.1:5000 and creates swasthyasetu.db
+   automatically on first run.
+
+2) Open the frontend:
+   Double-click START_PROJECT.bat (Windows) or open index.html directly in
+   your browser.
+
+3) Login: use LOGIN_DEMO.txt for demo credentials.
+
+Notes:
+- The app works fully offline for reading and for writing — any referral,
+  record or ASHA task you create while the backend/internet is unreachable
+  is saved locally and auto-synced the moment it comes back (look for the
+  small "waiting to sync" badge, bottom-left).
+- AI Symptom Check calls the backend's /chat endpoint. It uses a built-in
+  rule-based severity classifier (English/Hindi/Marathi keywords) by default,
+  so it works with zero extra setup. To use a real local model instead, run
+  Ollama with a model such as MedGemma and set the OLLAMA_URL environment
+  variable before starting app.py (see backend/app.py for details).
+
+OFFLINE MODE (for patients with no internet, e.g. in a village with no
+network coverage):
+- If the backend/internet is unreachable, AI Symptom Check automatically
+  switches to a copy of the SAME keyword classifier running on the device
+  itself (no server needed at all) — the patient still gets a severity
+  rating and next step.
+- A small orange banner appears at the top of every page when the device
+  is offline, reassuring the patient that Symptom Check, Token booking,
+  Health History, Referrals, ASHA/Doctor/Government/Traffic dashboards
+  and Emergency SOS/Ambulance pages all still work.
+- "Download as PDF" in My Health History falls back to the browser's own
+  Print dialog ("Save as PDF") if the PDF library couldn't load — this
+  needs no internet either.
+- If this app is hosted on a web server (recommended for real deployment —
+  e.g. a PHC's own Wi-Fi, or published online so patients can "Add to Home
+  Screen" on their phone), a Service Worker (sw.js) caches every page after
+  the first visit, so it opens and works instantly with zero internet from
+  then on, just like a native app.
+- Two things genuinely need a live internet connection and cannot work
+  offline, by nature: Google Maps (live map tiles/directions) and the
+  demo QR-code images (both degrade gracefully — the page still works,
+  just without the map/QR image).

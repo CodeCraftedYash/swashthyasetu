@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwasthyaSetu — Emergency Care Network</title>
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  .hero{padding:64px 0 40px;}
+  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;}
+  .hero h1{font-size:46px;line-height:1.08;margin-top:16px;}
+  .hero h1 em{font-style:normal;color:var(--primary);}
+  .hero p.lead{font-size:16.5px;color:var(--ink-soft);margin-top:18px;max-width:520px;}
+  .hero-actions{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap;}
+  .hero-stats{display:flex;gap:28px;margin-top:36px;flex-wrap:wrap;}
+  .hero-stats div b{display:block;font-family:var(--font-display);font-size:24px;color:var(--primary-dark);}
+  .hero-stats div span{font-size:12px;color:var(--ink-faint);}
+
+  .flow-card{background:var(--primary-dark);border-radius:20px;padding:26px;color:#fff;position:relative;overflow:hidden;}
+  .flow-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 85% 0%, rgba(255,255,255,.08), transparent 55%);}
+  .flow-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.12);position:relative;}
+  .flow-step:last-child{border-bottom:none;}
+  .flow-num{font-family:var(--font-mono);font-size:12px;color:rgba(255,255,255,.5);width:20px;flex-shrink:0;padding-top:2px;}
+  .flow-step b{display:block;font-family:var(--font-display);font-size:14.5px;}
+  .flow-step p{font-size:12.5px;color:rgba(255,255,255,.65);margin-top:3px;}
+  .flow-live{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11px;color:rgba(255,255,255,.6);margin-bottom:16px;}
+  .flow-live .dot{width:7px;height:7px;border-radius:50%;background:#3DDC97;animation:sos-pulse 1.4s infinite;}
+
+  .audience{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .audience .card{padding:26px;transition:transform .15s, box-shadow .15s;}
+  .audience .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+  .audience .icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;}
+
+  .modgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+  .modcard{padding:18px;display:flex;flex-direction:column;gap:8px;}
+  .modcard .n{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);}
+  .modcard h4{font-size:14.5px;}
+  .modcard p{font-size:12px;color:var(--ink-soft);}
+  @media (max-width:920px){ .hero-grid{grid-template-columns:1fr;} .audience{grid-template-columns:1fr;} .modgrid{grid-template-columns:repeat(2,1fr);} .hero h1{font-size:34px;} }
+</style>
+</head>
+<body><section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="demo-note">DEMO PROTOTYPE • All figures and availability shown are simulated</div><div class="hero-badge"><span class="avatar-dot">✓</span> Live across 6 hospitals in the Jharkhand pilot grid</div>
+      <h1>One network from<br><em>accident to admission.</em></h1>
+      <p class="lead">SwasthyaSetu connects patients, ambulances, hospitals and police on a single live grid — so help is dispatched by location the moment it's needed, and nobody stands in a line to find out if a bed is free.</p>
+      <div class="hero-actions">
+        <a href="sos.html" class="btn btn-alert">Send Emergency SOS</a>
+        <a href="hospitals.html" class="btn btn-outline">Check Hospital Availability</a>
+      </div>
+      <div class="hero-stats">
+        <div><b>4m 12s</b><span>Avg. ambulance dispatch time</span></div>
+        <div><b>6</b><span>Hospitals on live grid</span></div>
+        <div><b>0</b><span>Counter queues — token-based now</span></div>
+      </div>
+    </div>
+
+    <div class="flow-card">
+      <div class="flow-live"><span class="dot"></span> LIVE — how one alert moves through the network</div>
+      <div class="flow-step">
+        <div class="flow-num">01</div>
+        <div><b>Patient or bystander sends SOS</b><p>GPS location is captured automatically, even with just a rough network signal.</p></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">02</div>
+        <div><b>Nearest available hospital + ambulance matched</b><p>The grid checks live bed and ICU capacity, not just distance.</p></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">03</div>
+        <div><b>Police & hospital notified in parallel</b><p>Nearby patrol units get a location pin; the ER desk gets a bed pre-reserved.</p></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">04</div>
+        <div><b>Patient tracked until hand-off</b><p>Family and hospital both see live ETA — no repeated phone calls.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Who this is for</div>
+      <h2>Three sides of the same emergency, one screen each.</h2>
+    </div>
+    <div class="audience">
+      <div class="card">
+        <div class="icon" style="background:var(--alert-tint);color:var(--alert);">✚</div>
+        <h3>Patients & the public</h3>
+        <p class="muted mt-8">Send an SOS in one tap, get an AI severity read on what's happening, and find the nearest hospital that actually has a bed — before you leave the house.</p>
+        <a href="sos.html" class="btn btn-ghost btn-sm mt-16">Open Emergency SOS →</a>
+      </div>
+      <div class="card">
+        <div class="icon" style="background:var(--primary-tint);color:var(--primary);">⚕</div>
+        <h3>Hospital staff</h3>
+        <p class="muted mt-8">Run the front desk from one dashboard — token queue, doctor availability and ICU/bed counts update live, so nobody's answering "is the doctor free?" forty times a day.</p>
+        <a href="hospital-dashboard.html" class="btn btn-ghost btn-sm mt-16">Open Hospital Dashboard →</a>
+      </div>
+      <div class="card">
+        <div class="icon" style="background:var(--warning-tint);color:var(--warning);">◈</div>
+        <h3>Police & responders</h3>
+        <p class="muted mt-8">Every SOS raised nearby lands on the Alert Dashboard with a location pin and severity — including accidents where the caller can't speak.</p>
+        <a href="alerts.html" class="btn btn-ghost btn-sm mt-16">Open Alert Dashboard →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--surface-2);">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">All modules</div>
+      <h2>Everything on the grid.</h2>
+      <p>Ten connected screens — patient-facing, hospital-facing, and responder-facing — sharing one live picture of the network.</p>
+    </div>
+    <div class="modgrid">
+      <a class="card modcard" href="sos.html"><span class="n">01</span><h4>Emergency SOS</h4><p>One-tap alert with auto-captured location.</p></a>
+      <a class="card modcard" href="severity.html"><span class="n">02</span><h4>AI Severity Assessment</h4><p>Quick triage read before the ambulance arrives.</p></a>
+      <a class="card modcard" href="hospitals.html"><span class="n">03</span><h4>Hospital Availability</h4><p>Live beds, specialties and wait times nearby.</p></a>
+      <a class="card modcard" href="qr-network.html"><span class="n">04</span><h4>QR Hospital Network</h4><p>Scan-in at the door, skip the counter line.</p></a>
+      <a class="card modcard" href="ambulance.html"><span class="n">05</span><h4>Ambulance Tracking</h4><p>Live route, ETA and vitals feed en route.</p></a>
+      <a class="card modcard" href="hospital-dashboard.html"><span class="n">06</span><h4>Hospital Dashboard</h4><p>Front-desk control room, in one screen.</p></a>
+      <a class="card modcard" href="doctor-availability.html"><span class="n">07</span><h4>Doctor Availability</h4><p>Who's free, who's in surgery, right now.</p></a>
+      <a class="card modcard" href="icu-beds.html"><span class="n">08</span><h4>ICU & Bed Availability</h4><p>Ward-by-ward occupancy across the grid.</p></a>
+      <a class="card modcard" href="alerts.html"><span class="n">09</span><h4>Emergency Alert Dashboard</h4><p>Every live SOS, mapped for responders.</p></a>
+      <a class="card modcard" href="index.html"><span class="n">10</span><h4>You are here</h4><p>Home — the front door to the network.</p></a>
+    </div>
+  </div>
+</section>
+
+<script src="assets/shared.js"></script>
+<script>rsInitShell('index.html');</script>
+</body>
+</html>

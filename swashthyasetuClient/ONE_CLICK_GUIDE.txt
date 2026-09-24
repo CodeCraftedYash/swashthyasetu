@@ -1,0 +1,9 @@
+1. Extract this ZIP.
+2. Start the backend: cd backend && pip install -r requirements.txt && python app.py
+3. Double-click START_PROJECT.bat (or open index.html) to open the frontend.
+4. The app talks to the backend at http://127.0.0.1:5000 for referrals,
+   records, ASHA tasks and AI symptom triage — all stored in a real SQLite
+   database, shared across devices on the same network.
+5. No internet connection is required for the app to keep working — writes
+   made offline are queued and synced automatically once the backend is
+   reachable again.
