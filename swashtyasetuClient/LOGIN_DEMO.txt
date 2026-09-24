@@ -1,5 +1,0 @@
-SwasthyaSetu Demo Login
-Username: demo
-Password: demo123
-
-Login opens the main dashboard. Welcome voice is triggered after login.

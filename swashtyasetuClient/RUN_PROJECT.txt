@@ -1,2 +1,0 @@
-Open START_PROJECT.bat or double-click index.html.
-No backend/server is required.

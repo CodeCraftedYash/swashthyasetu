@@ -1,4 +1,0 @@
-1. Extract this ZIP.
-2. Double-click START_PROJECT.bat.
-3. The frontend opens directly in your browser.
-4. No backend, Node.js, database, localhost, or internet is required for the demo.
