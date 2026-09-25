@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ICU & Bed Availability — SwasthyaSetu</title>
+<title data-en="ICU &amp; Bed Availability — SwasthyaSetu" data-hi="आईसीयू व बेड उपलब्धता — स्वास्थ्यसेतु" data-mr="आयसीयू व बेड उपलब्धता — स्वास्थ्यसेतू">ICU & Bed Availability — SwasthyaSetu</title>
 <link rel="stylesheet" href="assets/styles.css">
 <style>
   .bedcard{padding:20px;}
@@ -18,9 +18,9 @@
 </head>
 <body><section class="section" style="padding-bottom:0;">
   <div class="container">
-    <div class="eyebrow">Module 08</div>
-    <h1 style="font-size:32px;margin-top:10px;">ICU & Bed Availability</h1>
-    <p class="muted mt-16" style="max-width:640px;font-size:15px;">Ward-level occupancy across every hospital on the grid — this is what decides where an ambulance gets routed.</p>
+    <div class="eyebrow" data-en="Module 08" data-hi="मॉड्यूल 08" data-mr="मॉड्यूल 08">Module 08</div>
+    <h1 style="font-size:32px;margin-top:10px;" data-en="ICU &amp; Bed Availability" data-hi="आईसीयू व बेड उपलब्धता" data-mr="आयसीयू व बेड उपलब्धता">ICU & Bed Availability</h1>
+    <p class="muted mt-16" style="max-width:640px;font-size:15px;" data-en="Ward-level occupancy across every hospital on the grid — this is what decides where an ambulance gets routed." data-hi="ग्रिड के हर अस्पताल में वार्ड-स्तर पर अधिभोग — यही तय करता है कि एम्बुलेंस कहां भेजी जाए।" data-mr="ग्रिडमधील प्रत्येक रुग्णालयातील वॉर्ड-स्तरावरील व्याप्ती — रुग्णवाहिका कुठे पाठवली जाईल हे हेच ठरवते.">Ward-level occupancy across every hospital on the grid — this is what decides where an ambulance gets routed.</p>
   </div>
 </section>
 
@@ -28,7 +28,7 @@
   <div class="grid grid-4" id="networkStats"></div>
 </section>
 
-<section class="container mt-24" id="quickDemoBeds"><div class="card card-pad"><div class="eyebrow">FAST ACCESS • DEMO</div><h3 style="margin-top:8px;">Quick bed availability</h3><p class="faint mt-8">Tap any simulated facility to see its demo bed details.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px;"><button class="card" onclick="rsToast('Sanjeevani General Hospital','ICU: 4 beds • HDU: 7 beds • DEMO DATA','ok')" style="padding:16px;text-align:left;cursor:pointer"><b>Sanjeevani General Hospital</b><div class="faint">ICU: 4 available</div></button><button class="card" onclick="rsToast('City Trauma Centre','ICU: 2 beds • Ventilators: 3 • DEMO DATA','ok')" style="padding:16px;text-align:left;cursor:pointer"><b>City Trauma Centre</b><div class="faint">ICU: 2 available</div></button><button class="card" onclick="rsToast('Swasthya Care Centre','HDU: 6 beds • ICU waitlist • DEMO DATA','warn')" style="padding:16px;text-align:left;cursor:pointer"><b>Swasthya Care Centre</b><div class="faint">HDU: 6 available</div></button></div></div></section>
+<section class="container mt-24" id="quickDemoBeds"><div class="card card-pad"><div class="eyebrow" data-en="FAST ACCESS • DEMO" data-hi="तेज़ पहुंच • डेमो" data-mr="जलद प्रवेश • डेमो">FAST ACCESS • DEMO</div><h3 style="margin-top:8px;" data-en="Quick bed availability" data-hi="त्वरित बेड उपलब्धता" data-mr="द्रुत बेड उपलब्धता">Quick bed availability</h3><p class="faint mt-8" data-en="Tap any simulated facility to see its demo bed details." data-hi="डेमो बेड विवरण देखने के लिए किसी सिम्युलेटेड सुविधा पर टैप करें।" data-mr="डेमो बेड तपशील पाहण्यासाठी सिम्युलेटेड सुविधेवर टॅप करा.">Tap any simulated facility to see its demo bed details.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px;"><button class="card" onclick="rsToast('Sanjeevani General Hospital','ICU: 4 beds • HDU: 7 beds • DEMO DATA','ok')" style="padding:16px;text-align:left;cursor:pointer"><b data-en="Sanjeevani General Hospital" data-hi="संजीवनी जनरल अस्पताल" data-mr="संजीवनी जनरल रुग्णालय">Sanjeevani General Hospital</b><div class="faint" data-en="ICU: 4 available" data-hi="ICU: 4 उपलब्ध" data-mr="ICU: 4 उपलब्ध">ICU: 4 available</div></button><button class="card" onclick="rsToast('City Trauma Centre','ICU: 2 beds • Ventilators: 3 • DEMO DATA','ok')" style="padding:16px;text-align:left;cursor:pointer"><b data-en="City Trauma Centre" data-hi="सिटी ट्रॉमा सेंटर" data-mr="सिटी ट्रॉमा सेंटर">City Trauma Centre</b><div class="faint" data-en="ICU: 2 available" data-hi="ICU: 2 उपलब्ध" data-mr="ICU: 2 उपलब्ध">ICU: 2 available</div></button><button class="card" onclick="rsToast('Swasthya Care Centre','HDU: 6 beds • ICU waitlist • DEMO DATA','warn')" style="padding:16px;text-align:left;cursor:pointer"><b data-en="Swasthya Care Centre" data-hi="स्वास्थ्य केयर सेंटर" data-mr="स्वास्थ्य केअर सेंटर">Swasthya Care Centre</b><div class="faint" data-en="HDU: 6 available" data-hi="HDU: 6 उपलब्ध" data-mr="HDU: 6 उपलब्ध">HDU: 6 available</div></button></div></div></section>
 <section class="container">
   <div class="list" id="bedList"></div>
 </section>
@@ -43,10 +43,10 @@ function totals(key){
 const gT = totals('general'), iT = totals('icu'), vT = totals('ventilator'), pT = totals('pediatric');
 
 document.getElementById('networkStats').innerHTML = `
-  <div class="stat-tile"><div class="num">${gT.total-gT.occ}</div><div class="label">General beds free network-wide</div></div>
-  <div class="stat-tile"><div class="num">${iT.total-iT.occ}</div><div class="label">ICU beds free network-wide</div></div>
-  <div class="stat-tile"><div class="num">${vT.total-vT.occ}</div><div class="label">Ventilators free</div></div>
-  <div class="stat-tile"><div class="num">${pT.total-pT.occ}</div><div class="label">Paediatric beds free</div></div>
+  <div class="stat-tile"><div class="num">${gT.total-gT.occ}</div><div class="label" data-en="General beds free network-wide" data-hi="नेटवर्क भर में सामान्य बेड खाली" data-mr="संपूर्ण नेटवर्कमध्ये सामान्य बेड रिकामे">General beds free network-wide</div></div>
+  <div class="stat-tile"><div class="num">${iT.total-iT.occ}</div><div class="label" data-en="ICU beds free network-wide" data-hi="नेटवर्क भर में ICU बेड खाली" data-mr="संपूर्ण नेटवर्कमध्ये ICU बेड रिकामे">ICU beds free network-wide</div></div>
+  <div class="stat-tile"><div class="num">${vT.total-vT.occ}</div><div class="label" data-en="Ventilators free" data-hi="वेंटिलेटर खाली" data-mr="व्हेंटिलेटर रिकामे">Ventilators free</div></div>
+  <div class="stat-tile"><div class="num">${pT.total-pT.occ}</div><div class="label" data-en="Paediatric beds free" data-hi="बाल रोग बेड खाली" data-mr="बालरोग बेड रिकामे">Paediatric beds free</div></div>
 `;
 
 function color(pct){ return pct>=92?'var(--alert)':pct>=75?'var(--warning)':'var(--accent)'; }

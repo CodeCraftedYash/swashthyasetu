@@ -43,3 +43,5 @@ h1,h2,h3,h4{font-weight:850;letter-spacing:-.025em}
 .ss-voice-panel small{color:#52606d;line-height:1.45}
 .ss-voice-panel #ssVoiceText{background:#f2f8fa;padding:12px;border-radius:10px;font-weight:650;min-height:44px}
 @media(max-width:700px){#ssVoiceBtn{right:12px;bottom:12px}.ss-voice-panel{right:12px;bottom:70px}}
+
+.lang-switch{display:inline-flex;flex-shrink:0;border:1px solid var(--border);border-radius:9px;overflow:hidden;background:#fff}.lang-opt{border:0;background:#fff;color:var(--primary);font-weight:800;font-size:12px;padding:8px 10px;cursor:pointer;border-right:1px solid var(--border)}.lang-opt:last-child{border-right:0}.lang-opt:hover{background:var(--surface-2)}.lang-opt.on{background:var(--primary);color:#fff}@media(max-width:760px){.lang-switch{margin-left:auto}}

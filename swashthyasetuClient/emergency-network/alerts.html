@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Emergency Alert Dashboard — SwasthyaSetu</title>
+<title data-en="Emergency Alert Dashboard — SwasthyaSetu" data-hi="आपातकालीन अलर्ट डैशबोर्ड — स्वास्थ्यसेतु" data-mr="आणीबाणी अलर्ट डॅशबोर्ड — स्वास्थ्यसेतू">Emergency Alert Dashboard — SwasthyaSetu</title>
 <link rel="stylesheet" href="assets/styles.css">
 <style>
   .dash-top{background:var(--primary-dark);color:#fff;padding:32px 0;}
@@ -37,8 +37,8 @@
 <body><section class="dash-top">
   <div class="container">
     <div>
-      <div class="eyebrow" style="color:rgba(255,255,255,.6);">Module 09 · Responder view</div>
-      <h1 class="mt-8">Emergency Alert Dashboard</h1>
+      <div class="eyebrow" style="color:rgba(255,255,255,.6);" data-en="Module 09 · Responder view" data-hi="मॉड्यूल 09 · प्रतिक्रियादाता दृश्य" data-mr="मॉड्यूल 09 · प्रतिसादकर्ता दृश्य">Module 09 · Responder view</div>
+      <h1 class="mt-8" data-en="Emergency Alert Dashboard" data-hi="आपातकालीन अलर्ट डैशबोर्ड" data-mr="आणीबाणी अलर्ट डॅशबोर्ड">Emergency Alert Dashboard</h1>
     </div>
     <div class="live-tag"><span class="dot"></span> Live feed — polling every 2s across the network</div>
   </div>
@@ -50,23 +50,23 @@
 
 <div class="container layout">
   <div class="card card-pad">
-    <h3 style="font-size:15px;">Active alert map</h3>
-    <p class="faint mt-8" style="font-size:12px;">Approximate positions — normalised for display, not to scale.</p>
+    <h3 style="font-size:15px;" data-en="Active alert map" data-hi="सक्रिय अलर्ट मानचित्र" data-mr="सक्रिय अलर्ट नकाशा">Active alert map</h3>
+    <p class="faint mt-8" style="font-size:12px;" data-en="Approximate positions — normalised for display, not to scale." data-hi="अनुमानित स्थिति — प्रदर्शन के लिए सामान्यीकृत, वास्तविक पैमाने पर नहीं।" data-mr="अंदाजे स्थिती — प्रदर्शनासाठी सामान्यीकृत, प्रत्यक्ष प्रमाणात नाही.">Approximate positions — normalised for display, not to scale.</p>
     <div class="map-mini mt-16" id="miniMap"></div>
     <div class="tag-row mt-16">
-      <span class="pill pill-alert">Critical</span>
-      <span class="pill pill-warn">Serious</span>
-      <span class="pill pill-ok">Moderate</span>
+      <span class="pill pill-alert" data-en="Critical" data-hi="अति गंभीर" data-mr="अति गंभीर">Critical</span>
+      <span class="pill pill-warn" data-en="Serious" data-hi="गंभीर" data-mr="गंभीर">Serious</span>
+      <span class="pill pill-ok" data-en="Moderate" data-hi="मध्यम" data-mr="मध्यम">Moderate</span>
     </div>
   </div>
 
   <div>
     <div class="flex-between">
-      <h3 style="font-size:15px;">Incoming SOS alerts</h3>
+      <h3 style="font-size:15px;" data-en="Incoming SOS alerts" data-hi="आने वाले SOS अलर्ट" data-mr="येणारे SOS अलर्ट">Incoming SOS alerts</h3>
       <select id="filterSel" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12.5px;">
-        <option value="">All statuses</option>
-        <option value="active">Active only</option>
-        <option value="Resolved">Resolved</option>
+        <option value="" data-en="All statuses" data-hi="सभी स्थितियां" data-mr="सर्व स्थिती">All statuses</option>
+        <option value="active" data-en="Active only" data-hi="केवल सक्रिय" data-mr="फक्त सक्रिय">Active only</option>
+        <option value="Resolved" data-en="Resolved" data-hi="हल किया गया" data-mr="निकाली">Resolved</option>
       </select>
     </div>
     <div id="alertList" class="mt-16"></div>
@@ -95,10 +95,10 @@ function render(){
   const crit = alerts.filter(a=>a.severity==='Critical' && a.status!=='Resolved').length;
   const resolved = alerts.filter(a=>a.status==='Resolved').length;
   document.getElementById('alertStats').innerHTML = `
-    <div class="stat-tile"><div class="num">${alerts.length}</div><div class="label">Total alerts today</div></div>
-    <div class="stat-tile"><div class="num" style="color:var(--alert);">${active}</div><div class="label">Active right now</div></div>
-    <div class="stat-tile"><div class="num" style="color:var(--warning);">${crit}</div><div class="label">Critical severity</div></div>
-    <div class="stat-tile"><div class="num" style="color:var(--accent);">${resolved}</div><div class="label">Resolved today</div></div>
+    <div class="stat-tile"><div class="num">${alerts.length}</div><div class="label" data-en="Total alerts today" data-hi="आज कुल अलर्ट" data-mr="आज एकूण अलर्ट">Total alerts today</div></div>
+    <div class="stat-tile"><div class="num" style="color:var(--alert);">${active}</div><div class="label" data-en="Active right now" data-hi="अभी सक्रिय" data-mr="आत्ता सक्रिय">Active right now</div></div>
+    <div class="stat-tile"><div class="num" style="color:var(--warning);">${crit}</div><div class="label" data-en="Critical severity" data-hi="अति गंभीर स्थिति" data-mr="अति गंभीर तीव्रता">Critical severity</div></div>
+    <div class="stat-tile"><div class="num" style="color:var(--accent);">${resolved}</div><div class="label" data-en="Resolved today" data-hi="आज हल किए गए" data-mr="आज निकाली">Resolved today</div></div>
   `;
 
   document.getElementById('miniMap').innerHTML = alerts.filter(a=>a.status!=='Resolved').map(a => {
@@ -126,11 +126,11 @@ function render(){
         <span class="pill pill-muted">${a.status}</span>
       </div>
       <div class="alert-actions">
-        ${a.status!=='Resolved' ? `<button class="btn btn-outline btn-sm" onclick="advanceAlert('${a.id}')">Advance status</button>
-        <button class="btn btn-ghost btn-sm" onclick="resolveAlert('${a.id}')">Mark resolved</button>` : `<span class="faint" style="font-size:12px;">Closed out — no action needed</span>`}
+        ${a.status!=='Resolved' ? `<button class="btn btn-outline btn-sm" onclick="advanceAlert('${a.id}')" data-en="Advance status" data-hi="स्थिति आगे बढ़ाएं" data-mr="स्थिती पुढे न्या">Advance status</button>
+        <button class="btn btn-ghost btn-sm" onclick="resolveAlert('${a.id}')" data-en="Mark resolved" data-hi="हल किया गया चिह्नित करें" data-mr="निकाली म्हणून चिन्हांकित करा">Mark resolved</button>` : `<span class="faint" style="font-size:12px;" data-en="Closed out — no action needed" data-hi="बंद — कोई कार्रवाई ज़रूरी नहीं" data-mr="बंद — कोणतीही कारवाई आवश्यक नाही">Closed out — no action needed</span>`}
       </div>
     </div>
-  `).join('') || '<div class="card card-pad">No alerts match this filter.</div>';
+  `).join('') || '<div class="card card-pad" data-en="No alerts match this filter." data-hi="इस फ़िल्टर से कोई अलर्ट मेल नहीं खाता।" data-mr="या फिल्टरशी जुळणारे अलर्ट नाहीत.">No alerts match this filter.</div>';
 }
 
 const statusFlow = ['Ambulance en route','Patient picked up','Patient admitted','Resolved'];

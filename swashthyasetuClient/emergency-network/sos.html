@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Emergency SOS — SwasthyaSetu</title>
+<title data-en="Emergency SOS — SwasthyaSetu" data-hi="आपातकालीन SOS — स्वास्थ्यसेतु" data-mr="आणीबाणी SOS — स्वास्थ्यसेतू">Emergency SOS — SwasthyaSetu</title>
 <link rel="stylesheet" href="assets/styles.css">
 <style>
   .sos-hero{background:var(--primary-dark);color:#fff;padding:48px 0 64px;position:relative;overflow:hidden;}
@@ -51,41 +51,41 @@
     <div class="card call-panel" style="padding:32px 24px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);">
       <div class="eyebrow" style="color:rgba(255,255,255,.7);"><span style="color:#3DDC97;">●</span> Network ready — GPS + nearest 6 hospitals</div>
       <h1 style="color:#fff;font-size:24px;margin-top:14px;">Press and hold isn't needed.<br>One tap sends it.</h1>
-      <button class="big-sos" id="sosBtn"><span>PRESS FOR</span>SOS</button>
-      <p class="hint">Sends your live location to the nearest available hospital, dispatches the closest ambulance, and alerts patrol units nearby.</p>
+      <button class="big-sos" id="sosBtn"><span data-en="PRESS FOR" data-hi="इसके लिए दबाएं" data-mr="यासाठी दाबा">PRESS FOR</span>SOS</button>
+      <p class="hint" data-en="Sends your live location to the nearest available hospital, dispatches the closest ambulance, and alerts patrol units nearby." data-hi="आपकी लाइव लोकेशन निकटतम उपलब्ध अस्पताल को भेजता है, सबसे नज़दीकी एम्बुलेंस भेजता है, और आस-पास की गश्ती टीमों को सूचित करता है।" data-mr="तुमचे थेट स्थान जवळच्या उपलब्ध रुग्णालयाला पाठवते, सर्वात जवळची रुग्णवाहिका पाठवते, आणि जवळच्या गस्त पथकांना सतर्क करते.">Sends your live location to the nearest available hospital, dispatches the closest ambulance, and alerts patrol units nearby.</p>
       <div class="quickcall">
-        <a href="tel:108" class="btn btn-outline" style="background:transparent;border-color:rgba(255,255,255,.3);color:#fff;">Call 108 directly</a>
-        <button class="btn btn-outline" style="background:transparent;border-color:rgba(255,255,255,.3);color:#fff;" onclick="resetDemo()">Reset demo</button>
+        <a href="tel:108" class="btn btn-outline" style="background:transparent;border-color:rgba(255,255,255,.3);color:#fff;" data-en="Call 108 directly" data-hi="सीधे 108 पर कॉल करें" data-mr="थेट 108 वर कॉल करा">Call 108 directly</a>
+        <button class="btn btn-outline" style="background:transparent;border-color:rgba(255,255,255,.3);color:#fff;" onclick="resetDemo()" data-en="Reset demo" data-hi="डेमो रीसेट करें" data-mr="डेमो रीसेट करा">Reset demo</button>
       </div>
     </div>
 
     <div class="status-card" id="statusCard">
       <div class="flex-between">
-        <h3 style="font-size:17px;">Dispatch status</h3>
-        <span class="pill pill-muted" id="statusPill">Waiting for SOS</span>
+        <h3 style="font-size:17px;" data-en="Dispatch status" data-hi="भेजने की स्थिति" data-mr="पाठवण्याची स्थिती">Dispatch status</h3>
+        <span class="pill pill-muted" id="statusPill" data-en="Waiting for SOS" data-hi="SOS की प्रतीक्षा" data-mr="SOS ची प्रतीक्षा">Waiting for SOS</span>
       </div>
 
       <div class="form-row mt-16" id="preForm">
-        <label>Reporting for</label>
-        <select id="forWhom"><option>Myself</option><option>Someone else nearby</option><option>A road accident victim</option></select>
-        <label class="mt-16">What's happening? (optional, helps triage)</label>
+        <label data-en="Reporting for" data-hi="के लिए रिपोर्ट कर रहे हैं" data-mr="यासाठी अहवाल देत आहे">Reporting for</label>
+        <select id="forWhom"><option value="Myself" data-en="Myself" data-hi="स्वयं" data-mr="स्वतः">Myself</option><option value="Someone else nearby" data-en="Someone else nearby" data-hi="पास में कोई और" data-mr="जवळपास कोणीतरी">Someone else nearby</option><option value="A road accident victim" data-en="A road accident victim" data-hi="सड़क दुर्घटना पीड़ित" data-mr="रस्ता अपघात पीडित">A road accident victim</option></select>
+        <label class="mt-16" data-en="What's happening? (optional, helps triage)" data-hi="क्या हो रहा है? (वैकल्पिक, ट्राइएज में मदद करता है)" data-mr="काय होत आहे? (ऐच्छिक, ट्रायएजमध्ये मदत करते)">What's happening? (optional, helps triage)</label>
         <textarea id="note" rows="2" placeholder="e.g. Motorbike hit by car, rider conscious but bleeding from leg"></textarea>
       </div>
 
       <div id="stepsWrap" class="mt-16" style="display:none;">
-        <div class="step" id="s1"><div class="step-dot">1</div><div><b>SOS received</b><p>Alert logged on the network.</p></div><div class="ts"></div></div>
-        <div class="step" id="s2"><div class="step-dot">2</div><div><b>Location confirmed</b><p>Locating you via device GPS…</p></div><div class="ts"></div></div>
-        <div class="step" id="s3"><div class="step-dot">3</div><div><b>Hospital matched</b><p>Checking live bed capacity nearby…</p></div><div class="ts"></div></div>
-        <div class="step" id="s4"><div class="step-dot">4</div><div><b>Ambulance dispatched</b><p>Nearest free unit assigned.</p></div><div class="ts"></div></div>
-        <div class="step" id="s5"><div class="step-dot">5</div><div><b>Police & control room notified</b><p>Location pin pushed to nearby patrol units.</p></div><div class="ts"></div></div>
+        <div class="step" id="s1"><div class="step-dot">1</div><div><b data-en="SOS received" data-hi="SOS प्राप्त हुआ" data-mr="SOS प्राप्त झाला">SOS received</b><p data-en="Alert logged on the network." data-hi="नेटवर्क पर अलर्ट दर्ज हुआ।" data-mr="नेटवर्कवर अलर्ट नोंदवला.">Alert logged on the network.</p></div><div class="ts"></div></div>
+        <div class="step" id="s2"><div class="step-dot">2</div><div><b data-en="Location confirmed" data-hi="लोकेशन कन्फर्म" data-mr="स्थान निश्चित">Location confirmed</b><p data-en="Locating you via device GPS…" data-hi="डिवाइस GPS से आपकी लोकेशन ढूंढी जा रही है…" data-mr="डिव्हाइस GPS द्वारे तुमचे स्थान शोधले जात आहे…">Locating you via device GPS…</p></div><div class="ts"></div></div>
+        <div class="step" id="s3"><div class="step-dot">3</div><div><b data-en="Hospital matched" data-hi="अस्पताल मिलान" data-mr="रुग्णालय जुळवले">Hospital matched</b><p data-en="Checking live bed capacity nearby…" data-hi="आस-पास लाइव बेड क्षमता जांची जा रही है…" data-mr="जवळपासची लाइव्ह बेड क्षमता तपासत आहे…">Checking live bed capacity nearby…</p></div><div class="ts"></div></div>
+        <div class="step" id="s4"><div class="step-dot">4</div><div><b data-en="Ambulance dispatched" data-hi="एम्बुलेंस भेजी गई" data-mr="रुग्णवाहिका पाठवली">Ambulance dispatched</b><p data-en="Nearest free unit assigned." data-hi="निकटतम खाली यूनिट सौंपी गई।" data-mr="जवळचे रिकामे युनिट नियुक्त केले.">Nearest free unit assigned.</p></div><div class="ts"></div></div>
+        <div class="step" id="s5"><div class="step-dot">5</div><div><b data-en="Police &amp; control room notified" data-hi="पुलिस व कंट्रोल रूम को सूचित किया गया" data-mr="पोलीस व कंट्रोल रूमला कळवले">Police & control room notified</b><p data-en="Location pin pushed to nearby patrol units." data-hi="आस-पास की गश्ती टीमों को लोकेशन पिन भेजा गया।" data-mr="जवळच्या गस्त पथकांना स्थान पिन पाठवले.">Location pin pushed to nearby patrol units.</p></div><div class="ts"></div></div>
 
         <div class="detail-grid" id="detailGrid" style="display:none;">
-          <div class="item"><span>Assigned hospital</span><b id="dHospital">—</b></div>
-          <div class="item"><span>Ambulance unit</span><b id="dAmbulance">—</b></div>
-          <div class="item"><span>ETA to you</span><b id="dEta">—</b></div>
-          <div class="item"><span>Your location</span><b id="dLoc">—</b></div>
+          <div class="item"><span data-en="Assigned hospital" data-hi="नियुक्त अस्पताल" data-mr="नियुक्त रुग्णालय">Assigned hospital</span><b id="dHospital">—</b></div>
+          <div class="item"><span data-en="Ambulance unit" data-hi="एम्बुलेंस यूनिट" data-mr="रुग्णवाहिका युनिट">Ambulance unit</span><b id="dAmbulance">—</b></div>
+          <div class="item"><span data-en="ETA to you" data-hi="आपके पास पहुंचने का अनुमानित समय" data-mr="तुमच्यापर्यंत पोहोचण्याचा अंदाजे वेळ">ETA to you</span><b id="dEta">—</b></div>
+          <div class="item"><span data-en="Your location" data-hi="आपकी लोकेशन" data-mr="तुमचे स्थान">Your location</span><b id="dLoc">—</b></div>
         </div>
-        <a href="ambulance.html" class="btn btn-primary btn-block mt-16" id="trackBtn" style="display:none;">Track ambulance live →</a>
+        <a href="ambulance.html" class="btn btn-primary btn-block mt-16" id="trackBtn" style="display:none;" data-en="Track ambulance live →" data-hi="एम्बुलेंस लाइव ट्रैक करें →" data-mr="रुग्णवाहिका लाइव्ह ट्रॅक करा →">Track ambulance live →</a>
       </div>
     </div>
   </div>
@@ -95,16 +95,16 @@
   <div class="container">
     <div class="grid grid-3">
       <div class="card card-pad">
-        <h4>Why this matters on the road</h4>
-        <p class="muted mt-8" style="font-size:13.5px;">Most delay in trauma cases isn't the ambulance ride — it's the 10–15 minutes before anyone even knows where the patient is. SwasthyaSetu removes that gap.</p>
+        <h4 data-en="Why this matters on the road" data-hi="रास्ते में यह क्यों महत्वपूर्ण है" data-mr="रस्त्यावर हे का महत्त्वाचे आहे">Why this matters on the road</h4>
+        <p class="muted mt-8" style="font-size:13.5px;" data-en="Most delay in trauma cases isn't the ambulance ride — it's the 10–15 minutes before anyone even knows where the patient is. SwasthyaSetu removes that gap." data-hi="आघात मामलों में ज़्यादातर देरी एम्बुलेंस की यात्रा नहीं होती — यह वे 10–15 मिनट होते हैं जब किसी को यह भी नहीं पता होता कि मरीज कहां है। स्वास्थ्यसेतु इस अंतर को मिटाता है।" data-mr="आघाताच्या प्रकरणांमध्ये बहुतांश विलंब रुग्णवाहिकेच्या प्रवासाचा नसतो — तो त्या 10–15 मिनिटांचा असतो जेव्हा कोणालाच रुग्ण कुठे आहे हे माहीत नसते. स्वास्थ्यसेतू ही तफावत दूर करते.">Most delay in trauma cases isn't the ambulance ride — it's the 10–15 minutes before anyone even knows where the patient is. SwasthyaSetu removes that gap.</p>
       </div>
       <div class="card card-pad">
-        <h4>Works with a weak signal</h4>
-        <p class="muted mt-8" style="font-size:13.5px;">The SOS payload is tiny (location + severity code) so it can go out even on 2G, and retries automatically until it's acknowledged.</p>
+        <h4 data-en="Works with a weak signal" data-hi="कमज़ोर सिग्नल में भी काम करता है" data-mr="कमकुवत सिग्नलमध्येही कार्य करते">Works with a weak signal</h4>
+        <p class="muted mt-8" style="font-size:13.5px;" data-en="The SOS payload is tiny (location + severity code) so it can go out even on 2G, and retries automatically until it's acknowledged." data-hi="SOS डेटा बहुत छोटा है (लोकेशन + गंभीरता कोड) इसलिए यह 2G पर भी भेजा जा सकता है और स्वीकार होने तक स्वतः फिर से कोशिश करता है।" data-mr="SOS डेटा खूप लहान आहे (स्थान + तीव्रता कोड) त्यामुळे तो 2G वरही जाऊ शकतो आणि स्वीकारले जाईपर्यंत आपोआप पुन्हा प्रयत्न करतो.">The SOS payload is tiny (location + severity code) so it can go out even on 2G, and retries automatically until it's acknowledged.</p>
       </div>
       <div class="card card-pad">
-        <h4>Bystanders can raise it too</h4>
-        <p class="muted mt-8" style="font-size:13.5px;">You don't need to be the patient — anyone at the scene can send the SOS and stay to guide the ambulance in.</p>
+        <h4 data-en="Bystanders can raise it too" data-hi="राहगीर भी इसे उठा सकते हैं" data-mr="जवळचे लोकही हे उठवू शकतात">Bystanders can raise it too</h4>
+        <p class="muted mt-8" style="font-size:13.5px;" data-en="You don't need to be the patient — anyone at the scene can send the SOS and stay to guide the ambulance in." data-hi="आपका मरीज होना ज़रूरी नहीं — घटनास्थल पर कोई भी SOS भेज सकता है और एम्बुलेंस को रास्ता दिखा सकता है।" data-mr="तुम्ही रुग्ण असणे आवश्यक नाही — घटनास्थळी कोणीही SOS पाठवू शकतो आणि रुग्णवाहिकेला मार्ग दाखवू शकतो.">You don't need to be the patient — anyone at the scene can send the SOS and stay to guide the ambulance in.</p>
       </div>
     </div>
   </div>
@@ -141,13 +141,15 @@ document.getElementById('sosBtn').addEventListener('click', () => {
     document.getElementById('s2').classList.add('active');
 
     const useCoords = (lat, lng, label) => {
+      try{localStorage.setItem('ss_patient_loc',JSON.stringify({lat,lng,at:Date.now(),real:!/approx/i.test(label)}))}catch(e){}
+      window.__nearestH=null; rsFindNearestHospitals(lat,lng,4).then(l=>{window.__nearestH=l[0];try{localStorage.setItem('ss_dest_hospital',JSON.stringify(l[0]))}catch(e){}}).catch(()=>{});
       markStep('s2');
       document.getElementById('dLoc').textContent = label;
       document.getElementById('s3').classList.add('active');
 
       setTimeout(() => {
         markStep('s3');
-        const hospital = RS_HOSPITALS.filter(h => h.status !== 'full').sort((a,b)=>a.distanceKm-b.distanceKm)[0] || RS_HOSPITALS[0];
+        const hospital = window.__nearestH ? {name: window.__nearestH.name, distanceKm: window.__nearestH.distanceKm} : (RS_HOSPITALS.filter(h => h.status !== 'full').sort((a,b)=>a.distanceKm-b.distanceKm)[0] || RS_HOSPITALS[0]);
         const ambulance = RS_AMBULANCES[Math.floor(Math.random()*RS_AMBULANCES.length)];
         const eta = Math.max(4, Math.round(hospital.distanceKm * 2.1));
         document.getElementById('dHospital').textContent = hospital.name;

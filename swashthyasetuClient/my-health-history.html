@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwasthyaSetu</title><link rel="stylesheet" href="assets/styles.css">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title data-en="SwasthyaSetu" data-hi="SwasthyaSetu" data-mr="SwasthyaSetu">SwasthyaSetu</title><link rel="stylesheet" href="assets/styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 .mh-wrap{max-width:760px;margin:0 auto}
@@ -75,7 +75,7 @@
     if(!('speechSynthesis' in window)){ if(onDone) onDone(); return; }
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.95;
+    u.rate = 0.95; u.pitch = 1.08;
     const wantLang = LANG_MAP[ssLang()] || 'en-IN';
     let done = false;
     const finish = ()=>{ if(done) return; done = true; if(onDone) onDone(); };
@@ -86,7 +86,7 @@
       if(spoken) return; spoken = true;
       try{ speechSynthesis.resume(); }catch(e){}
       const voices = speechSynthesis.getVoices();
-      const v = voices.find(v=>v.lang===wantLang) || voices.find(v=>v.lang && v.lang.toLowerCase().startsWith(ssLang()));
+      const v = SS_PICK_VOICE(voices,wantLang);
       if(v){ u.voice=v; u.lang=v.lang; } else { u.lang='en-US'; }
       speechSynthesis.speak(u);
       setTimeout(()=>{ try{ speechSynthesis.resume(); }catch(e){} }, 60);
@@ -151,13 +151,13 @@
         <b>${r.date} — ${r.type}: ${r.title}</b><br>
         ${r.facility ? `<small>Facility: ${r.facility}</small><br>` : ''}
         ${r.details ? `<small>${r.details}</small>` : ''}
-      </div>`).join('') : '<p>No history records found.</p>';
+      </div>`).join('') : '<p data-en="No history records found." data-hi="कोई इतिहास रिकॉर्ड नहीं मिला।" data-mr="इतिहास नोंद सापडली नाही.">No history records found.</p>';
     const w = window.open('', '_blank');
     if(!w){ ssToast(T('Please allow pop-ups to save as PDF','PDF सेव करने के लिए पॉप-अप की अनुमति दें','PDF सेव्ह करण्यासाठी पॉप-अप परवानगी द्या')); return; }
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>SwasthyaSetu — Medical History</title>
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title data-en="SwasthyaSetu — Medical History" data-hi="स्वास्थ्यसेतु — मेडिकल इतिहास" data-mr="स्वास्थ्यसेतू — वैद्यकीय इतिहास">SwasthyaSetu — Medical History</title>
       <style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:20px;margin-bottom:2px}small{color:#555}</style>
       </head><body>
-      <h1>SwasthyaSetu — Medical History</h1>
+      <h1 data-en="SwasthyaSetu — Medical History" data-hi="स्वास्थ्यसेतु — मेडिकल इतिहास" data-mr="स्वास्थ्यसेतू — वैद्यकीय इतिहास">SwasthyaSetu — Medical History</h1>
       <p>Patient: ${ssEsc(patient)}<br>Generated: ${new Date().toLocaleString()}</p>
       ${rowsHtml}
       <script>window.onload=()=>{window.print();}<\/script>

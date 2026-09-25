@@ -1,3 +1,27 @@
+
+/* ---- Consistent voice picker: ALWAYS prefers a female voice; remembers the pick so it never flips between male/female ---- */
+window.SS_PICK_VOICE=window.SS_PICK_VOICE||function(voices,wantLang){
+ try{
+  voices=(voices||[]).filter(v=>v&&v.lang);
+  const base=String(wantLang||'en').split('-')[0].toLowerCase();
+  const norm=v=>v.lang.replace('_','-').toLowerCase();
+  const MALE=/(^|[^a-z])(male|man)([^a-z]|$)|hemant|ravi\b|prabhat|rishi|madhur|manohar|sagar|mohan|david|mark\b|james|george|daniel|\bguy\b|ryan|alex\b|fred\b|bruce|liam|thomas|rocko|eddy|reed|arthur|gordon|aaron|ravi/i;
+  const FEMALE=/female|woman|zira|heera|kalpana|swara|neerja|aarohi|hazel|susan|samantha|karen|veena|lekha|priya|raveena|tessa|moira|fiona|serena|aria|jenny|sonia|libby|natasha|emma|sara\b|shruti|kajal|pallavi|google \u0939\u093f\u0928\u094d\u0926\u0940|google hindi|google us english|google uk english female|google \u092e\u0930\u093e\u0920\u0940/i;
+  let pool=voices.filter(v=>norm(v).split('-')[0]===base);
+  if(!pool.length) pool=voices.filter(v=>norm(v).split('-')[0]==='en'); // no voice for this language at all -> a female English voice
+  if(!pool.length) return null;
+  let saved=''; try{saved=localStorage.getItem('ss_voice_'+base)||''}catch(e){}
+  const score=v=>{let s=0;const n=v.name||'';
+   if(FEMALE.test(n))s+=10; if(MALE.test(n)&&!/female/i.test(n))s-=12;
+   if(norm(v)===String(wantLang).toLowerCase())s+=3;
+   if(/google|microsoft|natural|online/i.test(n))s+=1;
+   if(n===saved)s+=6; return s};
+  pool.sort((a,b)=>score(b)-score(a)||String(a.name).localeCompare(String(b.name)));
+  const pick=pool[0]; try{localStorage.setItem('ss_voice_'+base,pick.name)}catch(e){}
+  return pick;
+ }catch(e){return null}
+};
+
 const SS_LANG_KEY='swasthyasetu_lang';
 const SS_LANGS=['en','hi','mr'];
 const SS_LANG_NAMES={en:'English',hi:'हिंदी',mr:'मराठी'};
@@ -5,11 +29,12 @@ const SS_NAV=[
 ['index.html','⌂','Dashboard','डैशबोर्ड','डॅशबोर्ड'],['awaaz-sahayak.html','🎙','Voice Assistant (Book Token)','आवाज़ सहायक (टोकन बनाएं)','आवाज सहाय्यक (टोकन बनवा)'],['triage.html','✚','AI Symptom Check','AI लक्षण जांच','AI लक्षण तपासणी'],['facility-finder.html','⌖','Find Facility','सुविधा खोजें','सुविधा शोधा'],['my-health-history.html','📋','My Health History','मेरा स्वास्थ्य इतिहास','माझा आरोग्य इतिहास'],['teleconsult.html','◉','Teleconsult','टेली-कंसल्ट','टेली-कन्सल्ट'],['referral.html','↗','Referrals','रेफरल','रेफरल'],['medicine-diagnostics.html','⚕','Medicine & Labs','दवा व जांच','औषध व तपासणी'],['asha-dashboard.html','♟','ASHA / Frontline','आशा / फ्रंटलाइन','आशा / फ्रंटलाइन'],['doctor-dashboard.html','⚕','Doctor Command Center','डॉक्टर कमांड सेंटर','डॉक्टर कमांड सेंटर'],['traffic-police-dashboard.html','🚨','Traffic Police Desk','ट्रैफिक पुलिस डेस्क','ट्रॅफिक पोलीस डेस्क'],['government-dashboard.html','▣','Government Command Center','सरकारी कमांड सेंटर','सरकारी कमांड सेंटर'],['schemes.html','▣','Govt. Schemes','सरकारी योजनाएं','सरकारी योजना']];
 const SS_LOGO=`<div class="brand-icon">✚</div>`;
 function ssLang(){const l=localStorage.getItem(SS_LANG_KEY);return SS_LANGS.includes(l)?l:'en'}
-function ssApplyLanguage(){const l=ssLang();document.documentElement.lang=l;document.querySelectorAll('[data-en]').forEach(e=>{const v=e.getAttribute('data-'+l);if(v!==null&&v!=='')e.textContent=v;else{const ev=e.getAttribute('data-en');if(ev!==null)e.textContent=ev}});document.querySelectorAll('[data-en-placeholder]').forEach(e=>{const v=e.getAttribute('data-'+l+'-placeholder');if(v!==null&&v!=='')e.placeholder=v;else{const ev=e.getAttribute('data-en-placeholder');if(ev!==null)e.placeholder=ev}});const b=document.getElementById('langBtn');if(b){const next=SS_LANGS[(SS_LANGS.indexOf(l)+1)%SS_LANGS.length];b.textContent=SS_LANG_NAMES[next];b.setAttribute('aria-label','Switch language to '+SS_LANG_NAMES[next])}}
-function ssToggleLanguage(){const cur=ssLang();const next=SS_LANGS[(SS_LANGS.indexOf(cur)+1)%SS_LANGS.length];localStorage.setItem(SS_LANG_KEY,next);ssApplyLanguage()}
+function ssApplyLanguage(){const l=ssLang();document.documentElement.lang=l;document.querySelectorAll('[data-en]').forEach(e=>{const v=e.getAttribute('data-'+l);if(v!==null&&v!=='')e.textContent=v;else{const ev=e.getAttribute('data-en');if(ev!==null)e.textContent=ev}});document.querySelectorAll('[data-en-placeholder]').forEach(e=>{const v=e.getAttribute('data-'+l+'-placeholder');if(v!==null&&v!=='')e.placeholder=v;else{const ev=e.getAttribute('data-en-placeholder');if(ev!==null)e.placeholder=ev}});document.querySelectorAll('.lang-opt').forEach(b=>{const on=b.dataset.l===l;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)})}
+function ssSetLanguage(l){if(!SS_LANGS.includes(l))return;const changed=l!==ssLang();localStorage.setItem(SS_LANG_KEY,l);try{speechSynthesis.cancel()}catch(e){}if(changed)sessionStorage.setItem('ssLangAnnounce','1');if(changed)location.reload();else ssApplyLanguage()}
+function ssToggleLanguage(){const cur=ssLang();ssSetLanguage(SS_LANGS[(SS_LANGS.indexOf(cur)+1)%SS_LANGS.length])}
 function ssShell(active){
  const nav=SS_NAV.map(([href,ico,en,hi,mr])=>`<a href="${href}" class="${active===href?'active':''}"><span class="ico">${ico}</span><span data-en="${en}" data-hi="${hi}" data-mr="${mr}">${en}</span></a>`).join('');
- document.body.innerHTML=`<div class="app"><aside class="sidebar" id="sidebar"><a class="brand" href="index.html">${SS_LOGO}<span><b class="brand-name"><span class="swasthya-white">Swasthya</span> <span class="setu-original">Setu</span></b><small>SIH26133</small></span></a><div class="nav-title" data-en="Main Navigation" data-hi="मुख्य नेविगेशन" data-mr="मुख्य नेव्हिगेशन">Main Navigation</div><nav class="nav">${nav}</nav><div class="nav-title" data-en="Emergency" data-hi="आपातकाल" data-mr="आणीबाणी">Emergency</div><nav class="nav"><a href="emergency-network/index.html"><span class="ico">🛡</span><span data-en="Emergency Network" data-hi="आपातकालीन नेटवर्क" data-mr="आणीबाणी नेटवर्क">Emergency Network</span></a></nav><div class="side-status"><span class="dot"></span><div><b style="font-size:12px" data-en="System Status" data-hi="सिस्टम स्थिति" data-mr="प्रणाली स्थिती">System Status</b><small style="display:block;color:#7BE0B3;margin-top:3px;font-size:10px" data-en="All Systems Operational" data-hi="सभी सिस्टम सक्रिय" data-mr="सर्व प्रणाली सुरू">All Systems Operational</small></div></div></aside><div class="shell-overlay" id="shellOverlay"></div><main class="main"><header class="topbar"><button class="menu" id="menuBtn" aria-label="Open navigation">☰</button><div class="search"><input id="globalSearch" data-en-placeholder="Search facilities, services, patients..." data-hi-placeholder="सुविधा, सेवा, मरीज खोजें..." data-mr-placeholder="सुविधा, सेवा, रुग्ण शोधा..." placeholder="Search facilities, services, patients..."></div><div class="top-spacer"></div><span class="demo-ribbon" title="All operational values shown in this prototype are simulated for demonstration">DEMO DATA • SIMULATED</span><div class="location">📍 Jamshedpur, Jharkhand<small data-en="Demo location" data-hi="डेमो लोकेशन" data-mr="डेमो स्थान">Demo location</small></div><span class="demo-ribbon" style="margin-right:6px">ROLE: ${sessionStorage.getItem("ssRole")||"Demo User"}</span><button id="langBtn" class="lang" onclick="ssToggleLanguage()">हिंदी</button><a class="sos" href="emergency-network/sos.html">✚ <span data-en="Emergency SOS" data-hi="आपातकालीन SOS" data-mr="आणीबाणी SOS">Emergency SOS</span></a><a class="sos" style="background:#0E9E88;margin-left:8px" href="tel:108" title="Call national ambulance helpline">📞 <span data-en="Ambulance: 108" data-hi="एम्बुलेंस: 108" data-mr="रुग्णवाहिका: 108">Ambulance: 108</span></a></header><div class="content" id="pageContent"></div><footer class="footer">© 2026 SwasthyaSetu · SIH26133 Rural Public Healthcare Prototype</footer></main></div><div class="toast" id="toast"></div><div class="emergency-dock" aria-label="Emergency quick access"><a href="emergency-network/sos.html">🚨 Emergency SOS</a><a class="secondary" href="emergency-network/ambulance.html">🚑 Find Ambulance</a><a class="secondary" href="tel:108" style="font-weight:800">📞 Ambulance Helpline: 108</a><small>Demo prototype • simulated data</small></div>`;
+ document.body.innerHTML=`<div class="app"><aside class="sidebar" id="sidebar"><a class="brand" href="index.html">${SS_LOGO}<span><b class="brand-name"><span class="swasthya-white">Swasthya</span> <span class="setu-original">Setu</span></b><small>SIH26133</small></span></a><div class="nav-title" data-en="Main Navigation" data-hi="मुख्य नेविगेशन" data-mr="मुख्य नेव्हिगेशन">Main Navigation</div><nav class="nav">${nav}</nav><div class="nav-title" data-en="Emergency" data-hi="आपातकाल" data-mr="आणीबाणी">Emergency</div><nav class="nav"><a href="emergency-network/index.html"><span class="ico">🛡</span><span data-en="Emergency Network" data-hi="आपातकालीन नेटवर्क" data-mr="आणीबाणी नेटवर्क">Emergency Network</span></a></nav><div class="side-status"><span class="dot"></span><div><b style="font-size:12px" data-en="System Status" data-hi="सिस्टम स्थिति" data-mr="प्रणाली स्थिती">System Status</b><small style="display:block;color:#7BE0B3;margin-top:3px;font-size:10px" data-en="All Systems Operational" data-hi="सभी सिस्टम सक्रिय" data-mr="सर्व प्रणाली सुरू">All Systems Operational</small></div></div></aside><div class="shell-overlay" id="shellOverlay"></div><main class="main"><header class="topbar"><button class="menu" id="menuBtn" aria-label="Open navigation">☰</button><div class="search"><input id="globalSearch" data-en-placeholder="Search facilities, services, patients..." data-hi-placeholder="सुविधा, सेवा, मरीज खोजें..." data-mr-placeholder="सुविधा, सेवा, रुग्ण शोधा..." placeholder="Search facilities, services, patients..."></div><div class="top-spacer"></div><span class="demo-ribbon" title="All operational values shown in this prototype are simulated for demonstration">DEMO DATA • SIMULATED</span><div class="location">📍 Jamshedpur, Jharkhand<small data-en="Demo location" data-hi="डेमो लोकेशन" data-mr="डेमो स्थान">Demo location</small></div><span class="demo-ribbon" style="margin-right:6px">ROLE: ${sessionStorage.getItem("ssRole")||"Demo User"}</span><div class="lang-switch" role="group" aria-label="Language"><button type="button" class="lang-opt" data-l="en" onclick="ssSetLanguage('en')">EN</button><button type="button" class="lang-opt" data-l="hi" onclick="ssSetLanguage('hi')">हिं</button><button type="button" class="lang-opt" data-l="mr" onclick="ssSetLanguage('mr')">मरा</button></div><a class="sos" href="emergency-network/sos.html">✚ <span data-en="Emergency SOS" data-hi="आपातकालीन SOS" data-mr="आणीबाणी SOS">Emergency SOS</span></a><a class="sos" style="background:#0E9E88;margin-left:8px" href="tel:108" title="Call national ambulance helpline">📞 <span data-en="Ambulance: 108" data-hi="एम्बुलेंस: 108" data-mr="रुग्णवाहिका: 108">Ambulance: 108</span></a></header><div class="content" id="pageContent"></div><footer class="footer">© 2026 SwasthyaSetu · SIH26133 Rural Public Healthcare Prototype</footer></main></div><div class="toast" id="toast"></div><div class="emergency-dock" aria-label="Emergency quick access"><a href="emergency-network/sos.html">🚨 Emergency SOS</a><a class="secondary" href="emergency-network/ambulance.html">🚑 Find Ambulance</a><a class="secondary" href="tel:108" style="font-weight:800">📞 Ambulance Helpline: 108</a><small>Demo prototype • simulated data</small></div>`;
  const menu=document.getElementById('menuBtn'),side=document.getElementById('sidebar'),overlay=document.getElementById('shellOverlay');const close=()=>{side.classList.remove('open');overlay.classList.remove('show')};menu?.addEventListener('click',()=>{side.classList.toggle('open');overlay.classList.toggle('show')});overlay?.addEventListener('click',close);side?.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
  document.getElementById('globalSearch').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const q=e.target.value.toLowerCase();if(q.includes('facility')||q.includes('hospital'))location.href='facility-finder.html';else if(q.includes('referral'))location.href='referral.html';else if(q.includes('asha'))location.href='asha-dashboard.html';else if(q.includes('symptom'))location.href='triage.html';else if(q.includes('medicine')||q.includes('diagnostic')||q.includes('lab'))location.href='medicine-diagnostics.html';else if(q.includes('teleconsult')||q.includes('video'))location.href='teleconsult.html';else if(q.includes('doctor'))location.href='doctor-dashboard.html';else if(q.includes('traffic')||q.includes('accident'))location.href='traffic-police-dashboard.html';else if(q.includes('government')||q.includes('govt'))location.href='government-dashboard.html';else ssToast(ssLang()==='hi'?'खोज परिणाम उपलब्ध नहीं है':'No matching page found','', '');});
  ssApplyLanguage();
@@ -32,6 +57,43 @@ function ssBindNavigation(){
 function ssToast(msg){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
 function ssEsc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 
+/* ---------------- Guaranteed nearest-hospital finder (same approach as "Ambulance Khojo") ----------------
+   Works with ZERO setup — no Google Maps key, no backend server required:
+   1) Google Places (only if a Maps key is saved) — richest, live results.
+   2) OpenStreetMap Overpass API — free, keyless, real hospitals from the internet.
+   3) Built-in offline facility list — used only if both of the above are unreachable
+      (e.g. no internet at all), so the assistant NEVER comes back empty. */
+const SS_KNOWN_FACILITIES=[
+ {id:1,name:'Mango PHC',address:'Mango, Jamshedpur, Jharkhand, India',lat:22.8552,lng:86.2167},
+ {id:2,name:'MGM Medical College Hospital',address:'Sakchi, Jamshedpur, Jharkhand, India',lat:22.8060,lng:86.2025},
+ {id:3,name:'Parsudih CHC',address:'Parsudih, Jamshedpur, Jharkhand, India',lat:22.7877,lng:86.2495},
+ {id:4,name:'Tata Main Hospital',address:'C Road, Bistupur, Jamshedpur, Jharkhand, India',lat:22.8080,lng:86.1853},
+ {id:5,name:'RIMS Emergency & Trauma Centre',address:'Bariatu, Ranchi, Jharkhand, India',lat:23.3947,lng:85.3815},
+ {id:6,name:"St. Xavier's Care Hospital",address:'Doranda, Ranchi, Jharkhand, India',lat:23.3441,lng:85.3096}];
+function ssHaversineKm(a,b,c,d){const R=6371,r=x=>x*Math.PI/180,dl=r(c-a),dn=r(d-b),h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return R*2*Math.asin(Math.sqrt(h))}
+async function ssOverpassHospitals(lat,lng,rad){
+ const q='[out:json][timeout:12];(node["amenity"="hospital"](around:'+rad+','+lat+','+lng+');way["amenity"="hospital"](around:'+rad+','+lat+','+lng+');relation["amenity"="hospital"](around:'+rad+','+lat+','+lng+'););out center tags 60;';
+ for(const ep of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){
+  try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),9000);
+   const res=await fetch(ep,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ctl.signal});
+   clearTimeout(t);if(!res.ok)continue;const j=await res.json();return j.elements||[];}catch(e){}
+ } return null;
+}
+async function ssFindNearestHospitals(lat,lng,limit){
+ limit=limit||5;
+ try{if(window.SS_MAPS&&SS_MAPS.hasKey()){const l=await SS_MAPS.findNearestHospitals(lat,lng,{limit});if(l&&l.length)return l.map(h=>({...h,source:'google'}))}}catch(e){}
+ for(const rad of [6000,20000,60000]){
+  let els; try{els=await ssOverpassHospitals(lat,lng,rad)}catch(e){els=null} if(els===null)break;
+  const seen=new Set();
+  const list=els.map(e=>{const la=e.lat!=null?e.lat:(e.center&&e.center.lat),lo=e.lon!=null?e.lon:(e.center&&e.center.lon),t=e.tags||{},name=t['name:en']||t.name;
+   if(la==null||lo==null||!name)return null;
+   return{id:'osm'+e.id,name,address:[t['addr:street'],t['addr:suburb']||t['addr:city']].filter(Boolean).join(', ')||t['addr:full']||'',lat:la,lng:lo,phone:t.phone||t['contact:phone']||'',distanceKm:Math.round(ssHaversineKm(lat,lng,la,lo)*10)/10,source:'osm'}})
+   .filter(Boolean).filter(h=>{const k=h.name.toLowerCase();if(seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>a.distanceKm-b.distanceKm);
+  if(list.length)return list.slice(0,limit);
+ }
+ return SS_KNOWN_FACILITIES.map(h=>({...h,distanceKm:Math.round(ssHaversineKm(lat,lng,h.lat,h.lng)*10)/10,source:'offline'})).sort((a,b)=>a.distanceKm-b.distanceKm).slice(0,limit);
+}
+
 // SIH demo voice assistant (browser speech APIs; no data leaves the browser by this demo code)
 (function(){
  const oldShell=ssShell;
@@ -47,7 +109,7 @@ function ssEsc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'
   if(!('speechSynthesis'in window)){ ttsDone=true; tryFinish(); return; }
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);
-  u.rate=0.95;
+  u.rate=0.95;u.pitch=1.08;
   const wantLang=SR_LANG_MAP[ssLang()]||'en-IN';
   const finish=()=>{ if(ttsDone)return; ttsDone=true; tryFinish(); };
   u.onend=finish; u.onerror=finish;
@@ -58,11 +120,11 @@ function ssEsc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'
    if(spoken) return; spoken=true;
    try{ speechSynthesis.resume(); }catch(e){} // Chrome/Android bug: synth can get stuck "paused" (e.g. after tab was backgrounded) and silently never speak again until resume() is called
    const voices=speechSynthesis.getVoices();
-   const v=voices.find(v=>v.lang===wantLang) || voices.find(v=>v.lang && v.lang.toLowerCase().startsWith(ssLang()));
+   const v=SS_PICK_VOICE(voices,wantLang);
    // If the exact regional voice (hi-IN/mr-IN/en-IN) isn't installed on this machine, Chrome can
    // silently produce NO audio at all rather than falling back — so fall back ourselves to a
    // near-universally available voice instead of forcing a locale that may not exist here.
-   if(v){ u.voice=v; u.lang=v.lang; } else { u.lang='en-US'; }
+   if(v){ u.voice=v; u.lang=v.lang; } else { u.lang='en-US'; } const okv=v&&v.lang.toLowerCase().startsWith(ssLang());const dg=document.getElementById('ssVoiceDiag');if(dg){dg.textContent=(!okv&&ssLang()!=='en')?(ssLang()==='hi'?'Hindi':'Marathi')+' voice is not installed on this device, so audio may stay silent (text reply is still shown). Install it in OS speech settings, or use Microsoft Edge.':'';}
    window.__ssLastVoiceCount = voices.length; // for on-page diagnostics if audio is silent
    speechSynthesis.speak(u);
    setTimeout(()=>{ try{ speechSynthesis.resume(); }catch(e){} }, 60); // some Android/Chrome builds need a resume right after queuing too, or the utterance never actually plays
@@ -85,6 +147,9 @@ function ssEsc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'
   greetFirst:{en:"Welcome to SwasthyaSetu. Tap the microphone and say what you need — like, open ambulance, or, symptom check.",
     hi:"स्वस्थ्यसेतु में आपका स्वागत है। माइक बटन दबाएं और बोलें — जैसे, एम्बुलेंस खोलो, या, लक्षण जांच।",
     mr:"स्वस्थ्यसेतुमध्ये आपले स्वागत आहे. मायक्रोफोन दाबा आणि बोला — जसे, रुग्णवाहिका उघडा, किंवा, लक्षण तपासणी."},
+  langSet:{en:"Language changed to English. Replies will now be in English.",
+   hi:"भाषा हिंदी कर दी गई है। अब जवाब हिंदी में मिलेंगे।",
+   mr:"भाषा मराठी केली आहे. आता उत्तरे मराठीत मिळतील."},
   ask:{en:"What can I help you with?",hi:"मैं आपकी क्या मदद कर सकता हूँ?",mr:"मी तुम्हाला कशी मदत करू शकतो?"},
   listening:{en:"Listening…",hi:"सुन रहा हूँ…",mr:"ऐकत आहे…"},
   noSupport:{en:"Voice recognition is not supported in this browser. Please use Chrome/Edge and allow microphone access.",
@@ -109,6 +174,7 @@ function ssEsc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'
  };
  function tr(key){if(!T[key])return '';return T[key][ssLang()]||T[key].en||'';}
 
+ window.ssAddVoiceAssistant=function(){addVoiceAssistant();};
  function addVoiceAssistant(){
   if(document.getElementById('ssVoiceBtn'))return;
   const wrap=document.createElement('div');wrap.innerHTML=`<button id="ssVoiceBtn" aria-label="Open AI voice assistant" title="Ask SwasthyaSetu AI">🎙️ <span>AI Assist</span></button><div id="ssVoicePanel" class="ss-voice-panel" aria-live="polite"><b>🤖 SwasthyaSetu AI Assistant</b><small>Bolke poora app khol sakte hain — "ambulance kholo", "referral", "health record", "ASHA", "teleconsult", "schemes", "emergency SOS"</small><div id="ssVoiceText">${tr('ask')}</div><button id="ssVoiceStart" class="btn red btn-sm">🎤 Start Talking</button> <button id="ssVoiceTest" class="btn btn-sm" style="background:#eef2f4;color:#222">🔊 Test sound</button><div id="ssVoiceDiag" style="font-size:10.5px;color:#8296A2;margin-top:6px"></div></div>`;
@@ -135,6 +201,11 @@ function ssEsc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'
  // Speak a one-time welcome the moment the app opens (per browser tab session),
  // so a non-reading (anpad) user discovers the voice feature without needing to read anything.
  function maybeAutoGreet(){
+  if(sessionStorage.getItem('ssLangAnnounce')){
+   sessionStorage.removeItem('ssLangAnnounce'); sessionStorage.setItem('ssVoiceGreeted','1');
+   setTimeout(()=>{ const m=tr('langSet'); const panel=document.getElementById('ssVoicePanel'); if(panel)panel.classList.add('show'); const out=document.getElementById('ssVoiceText'); if(out)out.textContent=m; try{ssToast(m)}catch(e){} speak(m); },600);
+   return;
+  }
   if(sessionStorage.getItem('ssVoiceGreeted'))return;
   sessionStorage.setItem('ssVoiceGreeted','1');
   setTimeout(()=>{
@@ -208,6 +279,11 @@ function ssEsc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   const out=document.getElementById('ssVoiceText');
   if(!SR){ if(out) out.textContent=tr('noSupport'); return; }
+  // Stop the assistant's own voice before listening, or the mic picks up its own
+  // reply through the speaker and misfires / mishears — cancel + a short pause
+  // gives the audio device time to actually free up before recognition starts.
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const beginListening=()=>{
   const r=new SR();
   r.lang=SR_LANG_MAP[ssLang()]||'en-IN'; r.interimResults=false; r.maxAlternatives=1;
   if(out) out.textContent=tr('listening');
@@ -230,6 +306,8 @@ function ssEsc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'
   // Without this, the panel is stuck on "Listening…" forever and it looks like the mic just died.
   r.onend=()=>{ if(!gotResult && out) out.textContent=tr('timeout'); };
   r.start();
+  };
+  if(typeof speechSynthesis!=='undefined' && speechSynthesis.speaking){ setTimeout(beginListening,180); } else { beginListening(); }
  }
 
  function enhanceSearch(){const inp=document.getElementById('globalSearch');if(!inp)return;inp.setAttribute('list','ssDemoSearches');const dl=document.createElement('datalist');dl.id='ssDemoSearches';['Sanjeevani General Hospital — 42 beds — DEMO','City Care Hospital — ICU 8 — DEMO','Dr. Priya Sharma — General Medicine — DEMO','Ambulance JH01-AMB-2214 — En Route — DEMO','Ayushman Bharat / PM-JAY — DEMO guidance'].forEach(x=>{let o=document.createElement('option');o.value=x;dl.appendChild(o)});document.body.appendChild(dl);inp.addEventListener('input',()=>{const q=inp.value.toLowerCase();if(q.length>2){if(q.includes('ambulance'))ssToast('DEMO RESULT: JH01-AMB-2214 • 9 min ETA');else if(q.includes('hospital'))ssToast('DEMO RESULT: Sanjeevani General Hospital • 42 beds');else if(q.includes('doctor'))ssToast('DEMO RESULT: Dr. Priya Sharma • Available today');else if(q.includes('bed')||q.includes('icu'))ssToast('DEMO RESULT: ICU beds available • simulated');}});}

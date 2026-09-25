@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Severity Assessment — SwasthyaSetu</title>
+<title data-en="AI Severity Assessment — SwasthyaSetu" data-hi="AI गंभीरता आकलन — स्वास्थ्यसेतु" data-mr="AI तीव्रता मूल्यांकन — स्वास्थ्यसेतू">AI Severity Assessment — SwasthyaSetu</title>
 <link rel="stylesheet" href="assets/styles.css">
 <style>
   .layout{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;padding:44px 0;}
@@ -24,51 +24,51 @@
 </head>
 <body><section class="section" style="padding-bottom:0;">
   <div class="container">
-    <div class="eyebrow">Module 02</div>
-    <h1 style="font-size:32px;margin-top:10px;">AI Severity Assessment</h1>
-    <p class="muted mt-16" style="max-width:640px;font-size:15px;">Answer what you can see — this takes under a minute and helps decide whether to send an ambulance, go to the nearest hospital directly, or if it's safe to wait for a clinic appointment.</p>
+    <div class="eyebrow" data-en="Module 02" data-hi="मॉड्यूल 02" data-mr="मॉड्यूल 02">Module 02</div>
+    <h1 style="font-size:32px;margin-top:10px;" data-en="AI Severity Assessment" data-hi="AI गंभीरता आकलन" data-mr="AI तीव्रता मूल्यांकन">AI Severity Assessment</h1>
+    <p class="muted mt-16" style="max-width:640px;font-size:15px;" data-en="Answer what you can see — this takes under a minute and helps decide whether to send an ambulance, go to the nearest hospital directly, or if it's safe to wait for a clinic appointment." data-hi="जो देख सकते हैं वह बताएं — इसमें एक मिनट से कम लगता है और तय करने में मदद करता है कि एम्बुलेंस भेजें, सीधे निकटतम अस्पताल जाएं, या क्लिनिक अपॉइंटमेंट का इंतज़ार करना सुरक्षित है।" data-mr="जे दिसते ते सांगा — यास एक मिनिटापेक्षा कमी वेळ लागतो आणि रुग्णवाहिका पाठवावी, थेट जवळच्या रुग्णालयात जावे, की क्लिनिक भेटीची वाट पाहणे सुरक्षित आहे हे ठरवण्यास मदत करते.">Answer what you can see — this takes under a minute and helps decide whether to send an ambulance, go to the nearest hospital directly, or if it's safe to wait for a clinic appointment.</p>
   </div>
 </section>
 
-<section class="container mt-24"><div class="card card-pad"><div class="eyebrow">FAST DEMO</div><h3 style="margin-top:8px;">Quick demo scenarios</h3><p class="faint mt-8">Tap a scenario to preselect simulated symptoms and instantly show severity guidance.</p><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;"><button class="btn btn-primary btn-sm" onclick="applyDemo(['unconscious','breathing'])">Critical emergency</button><button class="btn btn-outline btn-sm" onclick="applyDemo(['fracture','pain-mild'])">Injury / fracture</button><button class="btn btn-outline btn-sm" onclick="applyDemo(['chest-pain','dizzy'])">Chest discomfort</button><button class="btn btn-ghost btn-sm" onclick="applyDemo(['pain-mild'])">Mild symptoms</button></div></div></section>
+<section class="container mt-24"><div class="card card-pad"><div class="eyebrow" data-en="FAST DEMO" data-hi="तेज़ डेमो" data-mr="जलद डेमो">FAST DEMO</div><h3 style="margin-top:8px;" data-en="Quick demo scenarios" data-hi="त्वरित डेमो परिदृश्य" data-mr="द्रुत डेमो परिस्थिती">Quick demo scenarios</h3><p class="faint mt-8" data-en="Tap a scenario to preselect simulated symptoms and instantly show severity guidance." data-hi="सिम्युलेटेड लक्षण पहले से चुनने और तुरंत गंभीरता मार्गदर्शन देखने के लिए किसी परिदृश्य पर टैप करें।" data-mr="सिम्युलेटेड लक्षणे आधीच निवडण्यासाठी आणि लगेच तीव्रता मार्गदर्शन पाहण्यासाठी परिस्थितीवर टॅप करा.">Tap a scenario to preselect simulated symptoms and instantly show severity guidance.</p><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;"><button class="btn btn-primary btn-sm" onclick="applyDemo(['unconscious','breathing'])" data-en="Critical emergency" data-hi="गंभीर आपातस्थिति" data-mr="गंभीर आणीबाणी">Critical emergency</button><button class="btn btn-outline btn-sm" onclick="applyDemo(['fracture','pain-mild'])" data-en="Injury / fracture" data-hi="चोट / फ्रैक्चर" data-mr="इजा / फ्रॅक्चर">Injury / fracture</button><button class="btn btn-outline btn-sm" onclick="applyDemo(['chest-pain','dizzy'])" data-en="Chest discomfort" data-hi="सीने में बेचैनी" data-mr="छातीत अस्वस्थता">Chest discomfort</button><button class="btn btn-ghost btn-sm" onclick="applyDemo(['pain-mild'])" data-en="Mild symptoms" data-hi="हल्के लक्षण" data-mr="सौम्य लक्षणे">Mild symptoms</button></div></div></section>
 <div class="container layout">
   <div class="card card-pad">
-    <div class="section-title">Consciousness & breathing</div>
-    <label class="check-item"><input type="checkbox" data-weight="40" data-tag="unconscious"><div><b>Unconscious or not responding</b><span>Doesn't answer or open eyes when spoken to</span></div></label>
-    <label class="check-item"><input type="checkbox" data-weight="35" data-tag="breathing"><div><b>Struggling to breathe / gasping</b><span>Visible chest effort, blue lips, or very fast breathing</span></div></label>
-    <label class="check-item"><input type="checkbox" data-weight="15" data-tag="confusion"><div><b>Confused, drowsy or slurred speech</b><span>Awake but not making sense</span></div></label>
+    <div class="section-title" data-en="Consciousness &amp; breathing" data-hi="चेतना व श्वास" data-mr="शुद्ध व श्वास">Consciousness & breathing</div>
+    <label class="check-item"><input type="checkbox" data-weight="40" data-tag="unconscious"><div><b data-en="Unconscious or not responding" data-hi="बेहोश या प्रतिक्रिया नहीं दे रहा" data-mr="बेशुद्ध किंवा प्रतिसाद देत नाही">Unconscious or not responding</b><span data-en="Doesn't answer or open eyes when spoken to" data-hi="बुलाने पर जवाब नहीं देता या आंखें नहीं खोलता" data-mr="बोलावल्यावर उत्तर देत नाही किंवा डोळे उघडत नाही">Doesn't answer or open eyes when spoken to</span></div></label>
+    <label class="check-item"><input type="checkbox" data-weight="35" data-tag="breathing"><div><b data-en="Struggling to breathe / gasping" data-hi="सांस लेने में तकलीफ़ / हांफना" data-mr="श्वास घेण्यास त्रास / धापा टाकणे">Struggling to breathe / gasping</b><span data-en="Visible chest effort, blue lips, or very fast breathing" data-hi="दिखाई देती सीने की मेहनत, नीले होंठ, या बहुत तेज़ सांस" data-mr="दिसणारी छातीची धडपड, निळे ओठ, किंवा खूप वेगवान श्वास">Visible chest effort, blue lips, or very fast breathing</span></div></label>
+    <label class="check-item"><input type="checkbox" data-weight="15" data-tag="confusion"><div><b data-en="Confused, drowsy or slurred speech" data-hi="भ्रमित, नींद में या अस्पष्ट बोली" data-mr="गोंधळलेले, झोपाळू किंवा अस्पष्ट बोलणे">Confused, drowsy or slurred speech</b><span data-en="Awake but not making sense" data-hi="जागा है पर बात समझ नहीं आ रही" data-mr="जागा आहे पण अर्थ समजत नाही">Awake but not making sense</span></div></label>
 
-    <div class="section-title">Bleeding & injury</div>
-    <label class="check-item"><input type="checkbox" data-weight="35" data-tag="bleeding-severe"><div><b>Heavy bleeding, won't stop</b><span>Soaking through cloth in under a minute</span></div></label>
-    <label class="check-item"><input type="checkbox" data-weight="12" data-tag="bleeding-mild"><div><b>Bleeding, but controlled with pressure</b><span>Steady but not soaking through</span></div></label>
-    <label class="check-item"><input type="checkbox" data-weight="25" data-tag="fracture"><div><b>Visible deformity / suspected fracture</b><span>Limb at an odd angle, can't bear weight</span></div></label>
-    <label class="check-item"><input type="checkbox" data-weight="10" data-tag="pain-mild"><div><b>Pain, but can move normally</b><span>No visible deformity</span></div></label>
+    <div class="section-title" data-en="Bleeding &amp; injury" data-hi="रक्तस्राव व चोट" data-mr="रक्तस्राव व इजा">Bleeding & injury</div>
+    <label class="check-item"><input type="checkbox" data-weight="35" data-tag="bleeding-severe"><div><b data-en="Heavy bleeding, won't stop" data-hi="भारी रक्तस्राव, रुक नहीं रहा" data-mr="जास्त रक्तस्राव, थांबत नाही">Heavy bleeding, won't stop</b><span data-en="Soaking through cloth in under a minute" data-hi="एक मिनट से कम में कपड़ा भीग जाना" data-mr="एका मिनिटापेक्षा कमी वेळात कापड भिजणे">Soaking through cloth in under a minute</span></div></label>
+    <label class="check-item"><input type="checkbox" data-weight="12" data-tag="bleeding-mild"><div><b data-en="Bleeding, but controlled with pressure" data-hi="रक्तस्राव, पर दबाव से नियंत्रित" data-mr="रक्तस्राव, पण दाबाने नियंत्रित">Bleeding, but controlled with pressure</b><span data-en="Steady but not soaking through" data-hi="लगातार पर कपड़ा नहीं भीग रहा" data-mr="सतत पण कापड भिजत नाही">Steady but not soaking through</span></div></label>
+    <label class="check-item"><input type="checkbox" data-weight="25" data-tag="fracture"><div><b data-en="Visible deformity / suspected fracture" data-hi="दिखाई देती विकृति / संदिग्ध फ्रैक्चर" data-mr="दिसणारी विकृती / संशयित फ्रॅक्चर">Visible deformity / suspected fracture</b><span data-en="Limb at an odd angle, can't bear weight" data-hi="अंग अजीब कोण में, वज़न नहीं सह पा रहा" data-mr="अवयव विचित्र कोनात, वजन सहन करू शकत नाही">Limb at an odd angle, can't bear weight</span></div></label>
+    <label class="check-item"><input type="checkbox" data-weight="10" data-tag="pain-mild"><div><b data-en="Pain, but can move normally" data-hi="दर्द है, पर सामान्य रूप से हिल पा रहा" data-mr="वेदना आहे, पण सामान्यपणे हलू शकतो">Pain, but can move normally</b><span data-en="No visible deformity" data-hi="कोई दिखाई देने वाली विकृति नहीं" data-mr="कोणतीही दिसणारी विकृती नाही">No visible deformity</span></div></label>
 
-    <div class="section-title">Chest, pulse & other signs</div>
-    <label class="check-item"><input type="checkbox" data-weight="38" data-tag="chest-pain"><div><b>Chest pain or pressure</b><span>Especially spreading to arm, jaw or back</span></div></label>
-    <label class="check-item"><input type="checkbox" data-weight="20" data-tag="vomiting"><div><b>Repeated vomiting after a fall/hit to the head</b><span>Possible concussion sign</span></div></label>
-    <label class="check-item"><input type="checkbox" data-weight="8" data-tag="dizzy"><div><b>Dizziness or mild nausea only</b><span>No other symptoms above</span></div></label>
+    <div class="section-title" data-en="Chest, pulse &amp; other signs" data-hi="सीना, नब्ज़ व अन्य संकेत" data-mr="छाती, नाडी व इतर लक्षणे">Chest, pulse & other signs</div>
+    <label class="check-item"><input type="checkbox" data-weight="38" data-tag="chest-pain"><div><b data-en="Chest pain or pressure" data-hi="सीने में दर्द या दबाव" data-mr="छातीत दुखणे किंवा दाब">Chest pain or pressure</b><span data-en="Especially spreading to arm, jaw or back" data-hi="खासकर बांह, जबड़े या पीठ तक फैलना" data-mr="विशेषतः हात, जबडा किंवा पाठीत पसरणे">Especially spreading to arm, jaw or back</span></div></label>
+    <label class="check-item"><input type="checkbox" data-weight="20" data-tag="vomiting"><div><b data-en="Repeated vomiting after a fall/hit to the head" data-hi="गिरने/सिर पर चोट के बाद बार-बार उल्टी" data-mr="पडल्यावर/डोक्याला मार लागल्यावर वारंवार उलटी">Repeated vomiting after a fall/hit to the head</b><span data-en="Possible concussion sign" data-hi="संभावित सिर की चोट का संकेत" data-mr="संभाव्य डोक्याला मार लागल्याचे लक्षण">Possible concussion sign</span></div></label>
+    <label class="check-item"><input type="checkbox" data-weight="8" data-tag="dizzy"><div><b data-en="Dizziness or mild nausea only" data-hi="केवल चक्कर या हल्की मतली" data-mr="फक्त चक्कर किंवा सौम्य मळमळ">Dizziness or mild nausea only</b><span data-en="No other symptoms above" data-hi="ऊपर कोई अन्य लक्षण नहीं" data-mr="वर इतर कोणतीही लक्षणे नाहीत">No other symptoms above</span></div></label>
   </div>
 
   <div>
     <div class="card card-pad result-card">
-      <h3 style="font-size:16px;">Assessment result</h3>
-      <p class="faint" style="font-size:12.5px;margin-top:4px;">Updates live as you check symptoms</p>
+      <h3 style="font-size:16px;" data-en="Assessment result" data-hi="आकलन परिणाम" data-mr="मूल्यांकन निकाल">Assessment result</h3>
+      <p class="faint" style="font-size:12.5px;margin-top:4px;" data-en="Updates live as you check symptoms" data-hi="लक्षण जांचते समय लाइव अपडेट होता है" data-mr="लक्षणे तपासताना थेट अपडेट होते">Updates live as you check symptoms</p>
       <div class="gauge"><div class="gauge-fill" id="gaugeFill" style="width:0%;background:var(--accent);"></div></div>
 
       <div class="verdict" id="verdict" style="background:var(--surface-2);">
-        <span class="pill pill-muted" id="verdictPill">Not assessed yet</span>
-        <h4 class="mt-8" id="verdictTitle">Check symptoms on the left to begin</h4>
-        <p class="muted" id="verdictText">We'll recommend whether to send an ambulance, self-transport, or book a routine visit.</p>
+        <span class="pill pill-muted" id="verdictPill" data-en="Not assessed yet" data-hi="अभी जांचा नहीं गया" data-mr="अद्याप तपासले नाही">Not assessed yet</span>
+        <h4 class="mt-8" id="verdictTitle" data-en="Check symptoms on the left to begin" data-hi="शुरू करने के लिए बाईं ओर लक्षण जांचें" data-mr="सुरू करण्यासाठी डावीकडे लक्षणे तपासा">Check symptoms on the left to begin</h4>
+        <p class="muted" id="verdictText" data-en="We'll recommend whether to send an ambulance, self-transport, or book a routine visit." data-hi="हम बताएंगे कि एम्बुलेंस भेजें, खुद जाएं, या नियमित मुलाक़ात बुक करें।" data-mr="आम्ही सुचवू की रुग्णवाहिका पाठवावी, स्वतः जावे, की नियमित भेट बुक करावी.">We'll recommend whether to send an ambulance, self-transport, or book a routine visit.</p>
       </div>
 
       <div id="actionArea" style="display:none;">
-        <a href="sos.html" class="btn btn-alert btn-block mt-16" id="actionBtn">Send Emergency SOS now</a>
-        <a href="hospitals.html" class="btn btn-outline btn-block mt-8">Find nearest hospital instead</a>
+        <a href="sos.html" class="btn btn-alert btn-block mt-16" id="actionBtn" data-en="Send Emergency SOS now" data-hi="अभी आपातकालीन SOS भेजें" data-mr="आता आणीबाणी SOS पाठवा">Send Emergency SOS now</a>
+        <a href="hospitals.html" class="btn btn-outline btn-block mt-8" data-en="Find nearest hospital instead" data-hi="इसके बजाय निकटतम अस्पताल खोजें" data-mr="त्याऐवजी जवळचे रुग्णालय शोधा">Find nearest hospital instead</a>
       </div>
 
       <hr class="divider">
-      <p class="faint" style="font-size:11.5px;line-height:1.5;">This is a triage aid built for the SwasthyaSetu prototype — it does not diagnose and is not a substitute for professional medical advice. When in doubt, always send the SOS.</p>
+      <p class="faint" style="font-size:11.5px;line-height:1.5;" data-en="This is a triage aid built for the SwasthyaSetu prototype — it does not diagnose and is not a substitute for professional medical advice. When in doubt, always send the SOS." data-hi="यह स्वास्थ्यसेतु प्रोटोटाइप के लिए बना एक ट्राइएज सहायक है — यह निदान नहीं करता और पेशेवर चिकित्सा सलाह का विकल्प नहीं है। संदेह होने पर हमेशा SOS भेजें।" data-mr="हे स्वास्थ्यसेतू प्रोटोटाइपसाठी बनवलेले ट्रायएज सहाय्यक आहे — हे निदान करत नाही आणि व्यावसायिक वैद्यकीय सल्ल्याचा पर्याय नाही. शंका असल्यास नेहमी SOS पाठवा.">This is a triage aid built for the SwasthyaSetu prototype — it does not diagnose and is not a substitute for professional medical advice. When in doubt, always send the SOS.</p>
     </div>
   </div>
 </div>

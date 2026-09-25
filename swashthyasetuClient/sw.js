@@ -6,7 +6,7 @@
    loads instantly offline afterwards. Network is only used as a fallback
    for things not yet cached, and to pick up updates in the background. */
 
-const CACHE_NAME = 'swasthyasetu-shell-v1';
+const CACHE_NAME = 'swasthyasetu-shell-v3';
 
 const APP_SHELL = [
   './',
@@ -81,19 +81,12 @@ self.addEventListener('fetch', (event) => {
   const isSameOrigin = url.origin === self.location.origin;
   if (!isSameOrigin) return;
 
+  // Network-first: always pick up the newest files (so language/voice fixes show immediately);
+  // fall back to the cache only when offline.
   event.respondWith(
-    caches.match(req).then((cached) => {
-      const network = fetch(req)
-        .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-          }
-          return res;
-        })
-        .catch(() => cached); // offline and not cached: nothing more we can do
-      // Cache-first: instant load offline; refresh cache quietly in the background.
-      return cached || network;
-    })
+    fetch(req).then((res) => {
+      if (res && res.ok) { const copy = res.clone(); caches.open(CACHE_NAME).then((c) => c.put(req, copy)); }
+      return res;
+    }).catch(() => caches.match(req).then((c) => c || caches.match('index.html')))
   );
 });

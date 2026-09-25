@@ -1,45 +1,85 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwasthyaSetu • Smart Referrals</title><link rel="stylesheet" href="assets/styles.css"></head><body>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title data-en="SwasthyaSetu • Smart Referrals" data-hi="स्वास्थ्यसेतु • स्मार्ट रेफरल" data-mr="स्वास्थ्यसेतू • स्मार्ट रेफरल">SwasthyaSetu • Smart Referrals</title><link rel="stylesheet" href="assets/styles.css"></head><body>
 <script src="assets/shared.js"></script><script src="assets/api.js"></script>
-<script>ssPage('referral.html', `<div class="page-head"><div><h1>Smart Referrals</h1><p>Create a referral, open the route on Google Maps, and follow the complete care chain.</p></div><span class="badge">● Live Demo</span></div>
+<script>ssPage('referral.html', `<div class="page-head"><div><h1 data-en="Smart Referrals" data-hi="स्मार्ट रेफरल" data-mr="स्मार्ट रेफरल">Smart Referrals</h1><p data-en="Create a referral, open the route on Google Maps, and follow the complete care chain." data-hi="रेफरल बनाएं, Google Maps पर रास्ता खोलें और पूरी देखभाल श्रृंखला ट्रैक करें।" data-mr="रेफरल तयार करा, Google Maps वर मार्ग उघडा आणि संपूर्ण काळजी साखळी पाहा.">Create a referral, open the route on Google Maps, and follow the complete care chain.</p></div><span class="badge" data-en="● Live Demo" data-hi="● लाइव डेमो" data-mr="● लाइव्ह डेमो">● Live Demo</span></div>
 <div class="grid-2">
-<div class="panel"><div class="panel-head"><h3>Create Referral</h3></div><form id="refForm" class="panel-pad form-grid">
-<div class="field"><label>Patient name</label><input id="rPatient" required></div>
-<div class="field"><label>Priority</label><select id="rPriority"><option>Routine</option><option>Priority</option><option>Urgent</option></select></div>
-<div class="field"><label>From facility / location</label><input id="rFrom" list="facilityNames" placeholder="Type hospital/PHC name or location" required></div>
-<div class="field"><label>To facility / hospital</label><input id="rTo" list="facilityNames" placeholder="Start typing hospital name..." required><datalist id="facilityNames"></datalist></div>
-<div class="field full"><label>Reason / symptoms</label><textarea id="rReason" required></textarea></div>
-<div class="field full"><button type="button" class="btn outline" id="previewRoute">🗺️ Preview Route</button> <button class="btn red">Create Referral</button></div></form></div>
-<div class="panel"><div class="panel-head"><h3>Route & Care Chain</h3></div><div class="panel-pad">
-<div id="routePreview" class="notice">Enter a hospital/facility name and click Preview Route.</div>
-<div id="mapActions" style="display:none;margin-top:12px"><a id="mapLink" class="btn outline" target="_blank" rel="noopener">🗺️ Open in Google Maps</a></div>
-<div class="flow" style="margin-top:18px;flex-wrap:wrap"><div class="step">Created</div><span class="arrow">→</span><div class="step">Accepted</div><span class="arrow">→</span><div class="step">On the way</div><span class="arrow">→</span><div class="step">Reached</div><span class="arrow">→</span><div class="step">Treatment done</div><span class="arrow">→</span><div class="step">Completed</div></div>
-<p style="color:var(--muted);margin-top:14px">Every status change is stored in the demo referral timeline.</p></div></div></div>
-<div class="panel" style="margin-top:18px"><div class="panel-head"><h3>Referral Tracker</h3></div><div id="refList" class="table-wrap"></div></div>`);</script>
+<div class="panel"><div class="panel-head"><h3 data-en="Create Referral" data-hi="रेफरल बनाएं" data-mr="रेफरल तयार करा">Create Referral</h3></div><form id="refForm" class="panel-pad form-grid">
+<div class="field"><label data-en="Patient name" data-hi="मरीज का नाम" data-mr="रुग्णाचे नाव">Patient name</label><input id="rPatient" required></div>
+<div class="field"><label data-en="Priority" data-hi="प्राथमिकता" data-mr="प्राधान्य">Priority</label><select id="rPriority"><option value="Routine" data-en="Routine" data-hi="नियमित" data-mr="नियमित">Routine</option><option value="Priority" data-en="Priority" data-hi="प्राथमिकता" data-mr="प्राधान्य">Priority</option><option value="Urgent" data-en="Urgent" data-hi="तत्काल" data-mr="तातडीचे">Urgent</option></select></div>
+<div class="field"><label data-en="From facility / location" data-hi="कहां से (सुविधा / जगह)" data-mr="कोठून (सुविधा / ठिकाण)">From facility / location</label><input id="rFrom" list="facilityNames" placeholder="Type hospital/PHC name or location" required></div>
+<div class="field"><label data-en="To facility / hospital" data-hi="कहां तक (सुविधा / अस्पताल)" data-mr="कुठे (सुविधा / रुग्णालय)">To facility / hospital</label><input id="rTo" list="facilityNames" placeholder="Start typing hospital name..." required><datalist id="facilityNames"></datalist></div>
+<div class="field full"><label data-en="Reason / symptoms" data-hi="कारण / लक्षण" data-mr="कारण / लक्षणे">Reason / symptoms</label><textarea id="rReason" required></textarea></div>
+<div class="field full"><button type="button" class="btn outline" id="previewRoute" data-en="🗺️ Preview Route" data-hi="🗺️ रास्ता देखें" data-mr="🗺️ मार्ग पहा">🗺️ Preview Route</button> <button class="btn red" data-en="Create Referral" data-hi="रेफरल बनाएं" data-mr="रेफरल तयार करा">Create Referral</button></div></form></div>
+<div class="panel"><div class="panel-head"><h3 data-en="Route &amp; Care Chain" data-hi="रास्ता और देखभाल श्रृंखला" data-mr="मार्ग आणि काळजी साखळी">Route & Care Chain</h3></div><div class="panel-pad">
+<div id="routePreview" class="notice" data-en="Enter a hospital/facility name and click Preview Route — or tap any referral in the tracker below to see its route here." data-hi="अस्पताल/सुविधा का नाम लिखकर 'रास्ता देखें' दबाएं — या नीचे ट्रैकर में किसी रेफरल पर टैप करें।" data-mr="रुग्णालय/सुविधेचे नाव लिहून 'मार्ग पहा' दाबा — किंवा खालील ट्रॅकरमधील रेफरलवर टॅप करा.">Enter a hospital/facility name and click Preview Route — or tap any referral in the tracker below to see its route here.</div>
+<div id="mapActions" style="display:none;margin-top:12px"><iframe id="mapFrame" title="Route map" loading="lazy" style="width:100%;height:280px;border:0;border-radius:12px;background:#eef2f4" referrerpolicy="no-referrer-when-downgrade"></iframe><div style="margin-top:8px"><a id="mapLink" class="btn outline" target="_blank" rel="noopener" data-en="🗺️ Open in Google Maps" data-hi="🗺️ Google Maps में खोलें" data-mr="🗺️ Google Maps मध्ये उघडा">🗺️ Open in Google Maps</a></div></div>
+<div class="flow" style="margin-top:18px;flex-wrap:wrap"><div class="step" data-en="Created" data-hi="बनाया गया" data-mr="तयार केले">Created</div><span class="arrow">→</span><div class="step" data-en="Accepted" data-hi="स्वीकार किया" data-mr="स्वीकारले">Accepted</div><span class="arrow">→</span><div class="step" data-en="On the way" data-hi="रास्ते में" data-mr="मार्गावर">On the way</div><span class="arrow">→</span><div class="step" data-en="Reached" data-hi="पहुंच गया" data-mr="पोहोचले">Reached</div><span class="arrow">→</span><div class="step" data-en="Treatment done" data-hi="इलाज पूरा" data-mr="उपचार पूर्ण">Treatment done</div><span class="arrow">→</span><div class="step" data-en="Completed" data-hi="पूर्ण" data-mr="पूर्ण">Completed</div></div>
+<p style="color:var(--muted);margin-top:14px" data-en="Every status change is stored in the demo referral timeline." data-hi="हर स्थिति बदलाव डेमो रेफरल टाइमलाइन में सहेजा जाता है।" data-mr="प्रत्येक स्थिती बदल डेमो रेफरल टाइमलाइनमध्ये साठवला जातो.">Every status change is stored in the demo referral timeline.</p></div></div></div>
+<div class="panel" style="margin-top:18px"><div class="panel-head"><h3 data-en="Referral Tracker" data-hi="रेफरल ट्रैकर" data-mr="रेफरल ट्रॅकर">Referral Tracker</h3></div><div id="refList" class="table-wrap"></div></div>`);</script>
 <script>
-let facilities=[];
-function esc(v){return ssEsc(v||'')}
-function resolveFacility(name){return facilities.find(f=>f.name.toLowerCase()===String(name).trim().toLowerCase())||facilities.find(f=>f.name.toLowerCase().includes(String(name).trim().toLowerCase()))}
-function mapsUrl(from,to){return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(from||'Jamshedpur, Jharkhand')+'&destination='+encodeURIComponent(to)+'&travelmode=driving'}
-function renderRoute(){
- const from=rFrom.value.trim(), to=rTo.value.trim(), f=resolveFacility(from), t=resolveFacility(to);
+const QUEUE_KEY='swasthyasetu_sync_queue_v1', LOCAL_KEY='ss_local_referrals_v1';
+const FALLBACK_FACILITIES=[
+ {name:'Mango PHC',type:'PHC',address:'Mango, Jamshedpur, Jharkhand, India',distanceKm:3.2},
+ {name:'MGM Medical College Hospital',type:'District Hospital',address:'Sakchi, Jamshedpur, Jharkhand, India',distanceKm:7.8},
+ {name:'Parsudih CHC',type:'CHC',address:'Parsudih, Jamshedpur, Jharkhand, India',distanceKm:11.4},
+ {name:'Tata Main Hospital',type:'Tertiary Hospital',address:'C Road, Bistupur, Jamshedpur, Jharkhand, India',distanceKm:6.1}];
+let facilities=FALLBACK_FACILITIES, referrals=[];
+function esc(v){return ssEsc(v==null?'':String(v))}
+function rj(k,f){try{return JSON.parse(localStorage.getItem(k)||'null')||f}catch{return f}}
+function resolveFacility(name){const n=String(name||'').trim().toLowerCase();if(!n)return null;return facilities.find(f=>f.name.toLowerCase()===n)||facilities.find(f=>f.name.toLowerCase().includes(n))}
+function addr(name){const f=resolveFacility(name);return f?f.address:(name||'Jamshedpur, Jharkhand')}
+function mapsUrl(from,to){return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(addr(from))+'&destination='+encodeURIComponent(addr(to))+'&travelmode=driving'}
+function embedUrl(from,to){return 'https://www.google.com/maps?saddr='+encodeURIComponent(addr(from))+'&daddr='+encodeURIComponent(addr(to))+'&output=embed'}
+function showMap(from,to,label){
  if(!to){routePreview.textContent='Please enter/select a destination hospital.';return}
- const dest=t?t.address:to, origin=f?f.address:from||'Jamshedpur, Jharkhand';
- routePreview.innerHTML='<b>Route ready</b><br>'+esc(origin)+' → '+esc(dest)+(t?'<br><small>Facility: '+esc(t.name)+' • '+t.distanceKm+' km demo distance • '+t.type+'</small>':'');
- mapLink.href=mapsUrl(origin,dest); mapActions.style.display='block';
+ const t=resolveFacility(to);
+ routePreview.innerHTML='<b>'+(label||'Route ready')+'</b><br>'+esc(addr(from))+' → '+esc(addr(to))+(t?'<br><small>Facility: '+esc(t.name)+' • '+esc(t.distanceKm)+' km • '+esc(t.type)+'</small>':'');
+ mapFrame.src=embedUrl(from,to); mapLink.href=mapsUrl(from,to); mapActions.style.display='block';
+ routePreview.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
-previewRoute.onclick=renderRoute;
-async function updateRef(id,patch){await SS_API.patch('/referrals',{id,...patch});loadRef()}
+previewRoute.onclick=()=>showMap(rFrom.value.trim(),rTo.value.trim());
 function chain(r){
- const statuses=['Created','Accepted','On the way','Reached','Treatment done','Completed']; const current=statuses.indexOf(r.status);
- return '<div style="display:flex;gap:6px;flex-wrap:wrap">'+statuses.map((s,i)=>'<span class="pill '+(i<=current?'success':'')+'">'+(i<=current?'✓ ':'')+s+'</span>').join('')+'</div>';
+ const st=['Created','Accepted','On the way','Reached','Treatment done','Completed'];const cur=st.indexOf(r.status);
+ return '<div style="display:flex;gap:6px;flex-wrap:wrap">'+st.map((s,i)=>'<span class="pill '+(i<=cur?'success':'')+'">'+(i<=cur?'✓ ':'')+s+'</span>').join('')+'</div>';
 }
+function pendingFromQueue(){return rj(QUEUE_KEY,[]).filter(q=>q.method==='POST'&&q.path==='/referrals').map(q=>({...q.body,id:q._qid,status:'Created',onWay:false,treatment:'Pending',createdAt:q.at,_pending:true}))}
 async function loadRef(){
- const [rs,fs]=await Promise.all([SS_API.get('/referrals'),SS_API.get('/facilities')]); facilities=fs;
- facilityNames.innerHTML=fs.map(f=>'<option value="'+esc(f.name)+'">'+esc(f.address)+'</option>').join('');
- refList.innerHTML='<table class="table"><thead><tr><th>Patient</th><th>Route</th><th>Care chain</th><th>Travel</th><th>Treatment</th><th>Actions</th></tr></thead><tbody>'+
- (rs.map(r=>'<tr><td>'+esc(r.patientName)+'<br><small>'+esc(r.priority)+'</small></td><td>'+esc(r.fromFacility)+' → '+esc(r.toFacility)+'<br><a href="'+mapsUrl(r.fromFacility,r.toFacility)+'" target="_blank">🗺️ Map</a></td><td>'+chain(r)+'</td><td>'+((r.onWay)?'🚑 On the way':'⏸ Not started')+'</td><td>'+esc(r.treatment||'Pending')+'</td><td><select onchange="quickUpdate('+r.id+',this.value)"><option value="">Update...</option><option>Accepted</option><option>On the way</option><option>Reached</option><option>Treatment done</option><option>Completed</option></select><br><button class="btn outline" style="margin-top:5px" onclick="toggleWay('+r.id+','+(!r.onWay)+')">'+(r.onWay?'Stop route':'🚑 Start route')+'</button></td></tr>').join('')||'<tr><td colspan="6">No referrals yet.</td></tr>')+'</tbody></table>';
+ let rs=[];
+ try{const fs=await SS_API.get('/facilities'); if(Array.isArray(fs)&&fs.length)facilities=fs}catch(e){}
+ try{rs=await SS_API.get('/referrals'); if(!Array.isArray(rs))rs=[]}catch(e){rs=[]}
+ const local=rj(LOCAL_KEY,[]);
+ const seen=new Set(rs.map(r=>r.patientName+'|'+r.fromFacility+'|'+r.toFacility+'|'+r.reason));
+ const extra=[...pendingFromQueue(),...local].filter(r=>{const k=r.patientName+'|'+r.fromFacility+'|'+r.toFacility+'|'+r.reason;if(seen.has(k))return false;seen.add(k);return true});
+ referrals=[...extra,...rs];
+ facilityNames.innerHTML=facilities.map(f=>'<option value="'+esc(f.name)+'">'+esc(f.address)+'</option>').join('');
+ renderList();
 }
-async function quickUpdate(id,status){if(!status)return;const patch={status};if(status==='Treatment done')patch.treatment='Treatment completed';if(status==='Completed')patch.treatment='Treatment completed';if(status==='On the way')patch.onWay=true;await updateRef(id,patch)}
-async function toggleWay(id,v){await updateRef(id,{onWay:v,status:v?'On the way':'Accepted'})}
-refForm.addEventListener('submit',async e=>{e.preventDefault();try{await SS_API.post('/referrals',{patientName:rPatient.value,fromFacility:rFrom.value,toFacility:rTo.value,reason:rReason.value,priority:rPriority.value});ssToast('Referral created');refForm.reset();mapActions.style.display='none';loadRef()}catch(e){ssToast(e.message)}});loadRef();
+function renderList(){
+ refList.innerHTML='<table class="table"><thead><tr><th data-en="Patient / Referral" data-hi="मरीज / रेफरल" data-mr="रुग्ण / रेफरल">Patient / Referral</th><th data-en="Route" data-hi="रास्ता" data-mr="मार्ग">Route</th><th data-en="Care chain" data-hi="देखभाल श्रृंखला" data-mr="काळजी साखळी">Care chain</th><th data-en="Travel" data-hi="यात्रा" data-mr="प्रवास">Travel</th><th data-en="Treatment" data-hi="इलाज" data-mr="उपचार">Treatment</th><th data-en="Actions" data-hi="कार्रवाई" data-mr="कृती">Actions</th></tr></thead><tbody>'+
+ (referrals.map((r,i)=>'<tr data-i="'+i+'" style="cursor:pointer"><td><b>'+esc(r.patientName)+'</b><br><small>'+esc(r.priority)+(r._pending?' • ⏳ pending sync':'')+'</small><br><small>'+esc(r.reason)+'</small></td>'+
+ '<td>'+esc(r.fromFacility)+' → '+esc(r.toFacility)+'<br><button type="button" class="btn outline btn-sm" data-map="'+i+'" data-en="🗺️ View map" data-hi="🗺️ मानचित्र देखें" data-mr="🗺️ नकाशा पहा">🗺️ View map</button></td>'+
+ '<td>'+chain(r)+'</td><td>'+(r.onWay?'🚑 On the way':'⏸ Not started')+'</td><td>'+esc(r.treatment||'Pending')+'</td>'+
+ '<td>'+(r._pending?'<small data-en="Updates available after sync" data-hi="सिंक के बाद अपडेट उपलब्ध" data-mr="सिंकनंतर अपडेट उपलब्ध">Updates available after sync</small>':'<select data-upd="'+i+'"><option value="" data-en="Update..." data-hi="अपडेट..." data-mr="अपडेट...">Update...</option><option value="Accepted" data-en="Accepted" data-hi="स्वीकार किया" data-mr="स्वीकारले">Accepted</option><option value="On the way" data-en="On the way" data-hi="रास्ते में" data-mr="मार्गावर">On the way</option><option value="Reached" data-en="Reached" data-hi="पहुंच गया" data-mr="पोहोचले">Reached</option><option value="Treatment done" data-en="Treatment done" data-hi="इलाज पूरा" data-mr="उपचार पूर्ण">Treatment done</option><option value="Completed" data-en="Completed" data-hi="पूर्ण" data-mr="पूर्ण">Completed</option></select><br><button type="button" class="btn outline btn-sm" style="margin-top:5px" data-way="'+i+'">'+(r.onWay?'Stop route':'🚑 Start route')+'</button>')+'</td></tr>').join('')||'<tr><td colspan="6" data-en="No referrals yet. Create one above — it will appear here." data-hi="अभी कोई रेफरल नहीं। ऊपर बनाएं — यहां दिखेगा।" data-mr="अद्याप रेफरल नाही. वर तयार करा — येथे दिसेल.">No referrals yet. Create one above — it will appear here.</td></tr>')+'</tbody></table>';
+}
+refList.addEventListener('click',e=>{
+ if(e.target.closest('select,[data-upd]'))return;
+ const w=e.target.closest('[data-way]'); if(w){const r=referrals[+w.dataset.way];updateRef(r.id,{onWay:!r.onWay,status:!r.onWay?'On the way':'Accepted'});return}
+ const row=e.target.closest('tr[data-i]'); if(row){const r=referrals[+row.dataset.i];showMap(r.fromFacility,r.toFacility,'Route for '+esc(r.patientName));}
+});
+refList.addEventListener('change',e=>{const s=e.target.closest('[data-upd]');if(!s||!s.value)return;const r=referrals[+s.dataset.upd];const p={status:s.value};
+ if(s.value==='Treatment done'||s.value==='Completed')p.treatment='Treatment completed'; if(s.value==='On the way')p.onWay=true; updateRef(r.id,p)});
+async function updateRef(id,patch){
+ try{await SS_API.patch('/referrals',{id,...patch})}catch(e){}
+ const l=rj(LOCAL_KEY,[]).map(r=>r.id===id?{...r,...patch}:r);localStorage.setItem(LOCAL_KEY,JSON.stringify(l));
+ loadRef();
+}
+refForm.addEventListener('submit',async e=>{e.preventDefault();
+ const body={patientName:rPatient.value,fromFacility:rFrom.value,toFacility:rTo.value,reason:rReason.value,priority:rPriority.value};
+ try{await SS_API.post('/referrals',body)}catch(err){
+  const l=rj(LOCAL_KEY,[]);l.unshift({...body,id:'L'+Date.now(),status:'Created',onWay:false,treatment:'Pending',createdAt:new Date().toISOString(),_pending:true});localStorage.setItem(LOCAL_KEY,JSON.stringify(l));}
+ ssToast('Referral created');
+ showMap(body.fromFacility,body.toFacility,'Referral created — route');
+ refForm.reset(); await loadRef();
+ refList.scrollIntoView({behavior:'smooth',block:'start'});
+});
+loadRef();
 </script></body></html>

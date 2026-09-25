@@ -1,3 +1,27 @@
+
+/* ---- Consistent voice picker: ALWAYS prefers a female voice; remembers the pick so it never flips between male/female ---- */
+window.SS_PICK_VOICE=window.SS_PICK_VOICE||function(voices,wantLang){
+ try{
+  voices=(voices||[]).filter(v=>v&&v.lang);
+  const base=String(wantLang||'en').split('-')[0].toLowerCase();
+  const norm=v=>v.lang.replace('_','-').toLowerCase();
+  const MALE=/(^|[^a-z])(male|man)([^a-z]|$)|hemant|ravi\b|prabhat|rishi|madhur|manohar|sagar|mohan|david|mark\b|james|george|daniel|\bguy\b|ryan|alex\b|fred\b|bruce|liam|thomas|rocko|eddy|reed|arthur|gordon|aaron|ravi/i;
+  const FEMALE=/female|woman|zira|heera|kalpana|swara|neerja|aarohi|hazel|susan|samantha|karen|veena|lekha|priya|raveena|tessa|moira|fiona|serena|aria|jenny|sonia|libby|natasha|emma|sara\b|shruti|kajal|pallavi|google \u0939\u093f\u0928\u094d\u0926\u0940|google hindi|google us english|google uk english female|google \u092e\u0930\u093e\u0920\u0940/i;
+  let pool=voices.filter(v=>norm(v).split('-')[0]===base);
+  if(!pool.length) pool=voices.filter(v=>norm(v).split('-')[0]==='en'); // no voice for this language at all -> a female English voice
+  if(!pool.length) return null;
+  let saved=''; try{saved=localStorage.getItem('ss_voice_'+base)||''}catch(e){}
+  const score=v=>{let s=0;const n=v.name||'';
+   if(FEMALE.test(n))s+=10; if(MALE.test(n)&&!/female/i.test(n))s-=12;
+   if(norm(v)===String(wantLang).toLowerCase())s+=3;
+   if(/google|microsoft|natural|online/i.test(n))s+=1;
+   if(n===saved)s+=6; return s};
+  pool.sort((a,b)=>score(b)-score(a)||String(a.name).localeCompare(String(b.name)));
+  const pick=pool[0]; try{localStorage.setItem('ss_voice_'+base,pick.name)}catch(e){}
+  return pick;
+ }catch(e){return null}
+};
+
 /* ================= SwasthyaSetu — shared shell, mock data, event bus ================= */
 
 const RS_NAV = [
@@ -13,6 +37,38 @@ const RS_NAV = [
   { href:'alerts.html', label:'Alert Dashboard' },
 ];
 
+
+/* ---------------- Nearest-hospital finder (real GPS -> real hospitals) ---------------- */
+const RS_KNOWN_FACILITIES=[
+ {name:'Tata Main Hospital',address:'C Road, Bistupur, Jamshedpur, Jharkhand',lat:22.8080,lng:86.1853,phone:'+91 657 271 2143'},
+ {name:'MGM Medical College Hospital',address:'Sakchi, Jamshedpur, Jharkhand',lat:22.8060,lng:86.2025},
+ {name:'Mango PHC',address:'Mango, Jamshedpur, Jharkhand',lat:22.8552,lng:86.2167},
+ {name:'Parsudih CHC',address:'Parsudih, Jamshedpur, Jharkhand',lat:22.7877,lng:86.2495},
+ {name:'RIMS Emergency & Trauma Centre',address:'Bariatu, Ranchi, Jharkhand',lat:23.3947,lng:85.3815},
+ {name:"St. Xavier's Care Hospital",address:'Doranda, Ranchi, Jharkhand',lat:23.3441,lng:85.3096}];
+function rsHaversine(a,b,c,d){const R=6371,r=x=>x*Math.PI/180,dl=r(c-a),dn=r(d-b),h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return R*2*Math.asin(Math.sqrt(h))}
+async function rsOverpass(lat,lng,rad){
+ const q='[out:json][timeout:12];(node["amenity"="hospital"](around:'+rad+','+lat+','+lng+');way["amenity"="hospital"](around:'+rad+','+lat+','+lng+');relation["amenity"="hospital"](around:'+rad+','+lat+','+lng+'););out center tags 60;';
+ for(const ep of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){
+  try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),9000);
+   const res=await fetch(ep,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ctl.signal});
+   clearTimeout(t);if(!res.ok)continue;const j=await res.json();return j.elements||[];}catch(e){}
+ } return null;
+}
+async function rsFindNearestHospitals(lat,lng,limit){
+ limit=limit||4;
+ try{if(window.SS_MAPS&&SS_MAPS.hasKey()){const l=await SS_MAPS.findNearestHospitals(lat,lng,{limit});if(l&&l.length)return l.map(h=>({...h,source:'Google Places (live)'}))}}catch(e){}
+ for(const rad of [6000,20000,60000]){
+  const els=await rsOverpass(lat,lng,rad); if(els===null)break;
+  const seen=new Set();
+  const list=els.map(e=>{const la=e.lat!=null?e.lat:(e.center&&e.center.lat),lo=e.lon!=null?e.lon:(e.center&&e.center.lon),t=e.tags||{},name=t['name:en']||t.name;
+   if(la==null||lo==null||!name)return null;
+   return{name,address:[t['addr:street'],t['addr:suburb']||t['addr:city']].filter(Boolean).join(', ')||t['addr:full']||'',lat:la,lng:lo,phone:t.phone||t['contact:phone']||'',emergency:t.emergency==='yes',distanceKm:Math.round(rsHaversine(lat,lng,la,lo)*10)/10,source:'OpenStreetMap (live)'}})
+   .filter(Boolean).filter(h=>{const k=h.name.toLowerCase();if(seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>a.distanceKm-b.distanceKm);
+  if(list.length)return list.slice(0,limit);
+ }
+ return RS_KNOWN_FACILITIES.map(h=>({...h,distanceKm:Math.round(rsHaversine(lat,lng,h.lat,h.lng)*10)/10,source:'Built-in facility list (offline)'})).sort((a,b)=>a.distanceKm-b.distanceKm).slice(0,limit);
+}
 /* ---------------- Mock data (shared "backend" via localStorage) ---------------- */
 const RS_HOSPITALS = [
   { id:'H1', name:'Sanjeevani General Hospital', area:'Lalpur, Ranchi', distanceKm:1.8, level:'Level I Trauma', phone:'+91 651 220 1144',
@@ -114,13 +170,15 @@ const RS_I18N={
  'Send Emergency SOS':'आपातकालीन SOS भेजें','Check Hospital Availability':'अस्पताल उपलब्धता देखें','Patients & the public':'मरीज और आम जनता','Hospital staff':'अस्पताल स्टाफ','Police & responders':'पुलिस और रिस्पॉन्डर','All modules':'सभी मॉड्यूल','Everything on the grid.':'नेटवर्क पर सब कुछ।',
  'Doctor Availability':'डॉक्टर उपलब्धता','ICU & Bed Availability':'आईसीयू और बेड उपलब्धता','Ambulance Tracking':'एम्बुलेंस ट्रैकिंग','Emergency Alert Dashboard':'आपातकालीन अलर्ट डैशबोर्ड','Live':'लाइव','available':'उपलब्ध','busy':'व्यस्त','full':'पूर्ण','in-surgery':'सर्जरी में','on-leave':'छुट्टी पर','Now':'अभी','Tomorrow':'कल'
 };
-function rsLang(){return localStorage.getItem(RS_LANG_KEY)==='hi'?'hi':'en'}
-function rsToggleLanguage(){localStorage.setItem(RS_LANG_KEY,rsLang()==='en'?'hi':'en');rsApplyLanguage()}
-function rsTranslateTextNode(node){if(node.nodeType!==Node.TEXT_NODE)return;const raw=node.nodeValue;const t=raw.trim();if(!t)return;if(!node.parentElement||['SCRIPT','STYLE'].includes(node.parentElement.tagName))return; if(!node.__rs_en) node.__rs_en=raw; const lang=rsLang(); if(lang==='en'){node.nodeValue=node.__rs_en;return} let out=RS_I18N[t]||t.replace(/^[\s]+|[\s]+$/g,''); if(out!==t){node.nodeValue=raw.replace(t,out)} }
-function rsApplyLanguage(){document.documentElement.lang=rsLang();document.querySelectorAll('[data-en]').forEach(e=>{const v=e.getAttribute('data-'+rsLang());if(v!==null)e.textContent=v});const btn=document.getElementById('rsLangBtn');if(btn){btn.textContent=rsLang()==='en'?'हिंदी':'English';btn.setAttribute('aria-label',rsLang()==='en'?'Switch to Hindi':'Switch to English')}document.querySelectorAll('body *').forEach(el=>{if(el.children.length===0&&el.tagName!=='SCRIPT'&&el.tagName!=='STYLE'&&el.firstChild)rsTranslateTextNode(el.firstChild)})}
+const RS_I18N_MR={'Home':'मुख्यपृष्ठ','Emergency SOS':'आणीबाणी SOS','Severity Check':'गंभीरता तपासणी','Hospital Availability':'रुग्णालय उपलब्धता','QR Network':'क्यूआर नेटवर्क','Ambulance Tracking':'रुग्णवाहिका ट्रॅकिंग','Hospital Dashboard':'रुग्णालय डॅशबोर्ड','Doctors':'डॉक्टर','ICU & Beds':'आयसीयू आणि बेड','Alert Dashboard':'अलर्ट डॅशबोर्ड','Responder Login':'रिस्पॉन्डर लॉगिन','Get Help Now':'आत्ता मदत मिळवा','Emergency Care Network':'आणीबाणी सेवा नेटवर्क','Emergency':'आणीबाणी','Search':'शोधा','Open':'उपलब्ध','Busy':'व्यस्त','Full':'भरलेले','Live':'लाइव्ह','available':'उपलब्ध','busy':'व्यस्त','full':'भरलेले','Now':'आत्ता','Tomorrow':'उद्या','Send Emergency SOS':'आणीबाणी SOS पाठवा','Check Hospital Availability':'रुग्णालय उपलब्धता पहा','Doctor Availability':'डॉक्टर उपलब्धता','ICU & Bed Availability':'आयसीयू आणि बेड उपलब्धता','Emergency Alert Dashboard':'आणीबाणी अलर्ट डॅशबोर्ड'};
+function rsLang(){const l=localStorage.getItem(RS_LANG_KEY);return ['en','hi','mr'].includes(l)?l:'en'}
+function rsSetLanguage(l){if(!['en','hi','mr'].includes(l))return;const ch=l!==rsLang();localStorage.setItem(RS_LANG_KEY,l);try{speechSynthesis.cancel()}catch(e){}if(ch)sessionStorage.setItem('ssLangAnnounce','1');if(ch)location.reload();else rsApplyLanguage()}
+function rsToggleLanguage(){const o=['en','hi','mr'];rsSetLanguage(o[(o.indexOf(rsLang())+1)%3])}
+function rsTranslateTextNode(node){if(node.nodeType!==Node.TEXT_NODE)return;const raw=node.nodeValue;const t=raw.trim();if(!t)return;if(!node.parentElement||['SCRIPT','STYLE'].includes(node.parentElement.tagName))return; if(!node.__rs_en) node.__rs_en=raw; const lang=rsLang(); if(lang==='en'||(lang==='mr'&&!RS_I18N_MR[t])){node.nodeValue=node.__rs_en;return} let out=(lang==='mr'?RS_I18N_MR:RS_I18N)[t]||t.replace(/^[\s]+|[\s]+$/g,''); if(out!==t){node.nodeValue=raw.replace(t,out)} }
+function rsApplyLanguage(){document.documentElement.lang=rsLang();document.querySelectorAll('[data-en]').forEach(e=>{const v=e.getAttribute('data-'+rsLang());if(v!==null)e.textContent=v});document.querySelectorAll('.lang-opt').forEach(b=>{const on=b.dataset.l===rsLang();b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});document.querySelectorAll('body *').forEach(el=>{if(el.children.length===0&&el.tagName!=='SCRIPT'&&el.tagName!=='STYLE'&&el.firstChild)rsTranslateTextNode(el.firstChild)})}
 function rsInitShell(activeHref){
- const navHtml=RS_NAV.map(n=>`<a href="${n.href}" class="${n.href===activeHref?'active':''}" data-en="${n.label}" data-hi="${RS_I18N[n.label]||n.label}">${n.label}</a>`).join('');
- const topbar=document.createElement('header');topbar.className='topbar';topbar.innerHTML=`<div class="topbar-inner"><a href="index.html" class="brand">${RS_LOGO}<span>SwasthyaSetu<small data-en="Emergency Care Network" data-hi="आपातकालीन देखभाल नेटवर्क">Emergency Care Network</small></span></a><nav class="nav-links">${navHtml}</nav><div class="nav-role"><button id="rsLangBtn" class="lang-btn" onclick="rsToggleLanguage()">हिंदी</button><a href="../index.html" class="btn btn-ghost btn-sm">← <span data-en="Main Dashboard" data-hi="मुख्य डैशबोर्ड">Main Dashboard</span></a><a href="alerts.html" class="btn btn-outline btn-sm">Responder Login</a></div></div>`;
+ const navHtml=RS_NAV.map(n=>`<a href="${n.href}" class="${n.href===activeHref?'active':''}" data-en="${n.label}" data-hi="${RS_I18N[n.label]||n.label}" data-mr="${RS_I18N_MR[n.label]||n.label}">${n.label}</a>`).join('');
+ const topbar=document.createElement('header');topbar.className='topbar';topbar.innerHTML=`<div class="topbar-inner"><a href="index.html" class="brand">${RS_LOGO}<span>SwasthyaSetu<small data-en="Emergency Care Network" data-hi="आपातकालीन देखभाल नेटवर्क">Emergency Care Network</small></span></a><nav class="nav-links">${navHtml}</nav><div class="nav-role"><div class="lang-switch" role="group" aria-label="Language"><button type="button" class="lang-opt" data-l="en" onclick="rsSetLanguage('en')">EN</button><button type="button" class="lang-opt" data-l="hi" onclick="rsSetLanguage('hi')">हिं</button><button type="button" class="lang-opt" data-l="mr" onclick="rsSetLanguage('mr')">मरा</button></div><a href="../index.html" class="btn btn-ghost btn-sm">← <span data-en="Main Dashboard" data-hi="मुख्य डैशबोर्ड">Main Dashboard</span></a><a href="alerts.html" class="btn btn-outline btn-sm">Responder Login</a></div></div>`;
  document.body.prepend(topbar);
  if(activeHref!=='sos.html'){const sos=document.createElement('a');sos.href='sos.html';sos.className='sos-float';sos.innerHTML='<span class="dot"></span> <span data-en="SOS — Get Help Now" data-hi="SOS — अभी सहायता पाएं">SOS — Get Help Now</span>';document.body.appendChild(sos)}
  const stack=document.createElement('div');stack.id='toast-stack';document.body.appendChild(stack);
@@ -139,6 +197,9 @@ function rsAddVoiceAssistant(){
   greetFirst:{en:"Welcome to the Emergency Network. Tap the microphone and say what you need — like, find ambulance, or, main dashboard.",
    hi:"आपातकालीन नेटवर्क में आपका स्वागत है। माइक बटन दबाएं और बोलें — जैसे, एम्बुलेंस खोजो, या, मुख्य डैशबोर्ड।",
    mr:"आणीबाणी नेटवर्कमध्ये आपले स्वागत आहे. मायक्रोफोन दाबा आणि बोला — जसे, रुग्णवाहिका शोधा, किंवा, मुख्य डॅशबोर्ड."},
+  langSet:{en:"Language changed to English. Replies will now be in English.",
+   hi:"भाषा हिंदी कर दी गई है। अब जवाब हिंदी में मिलेंगे।",
+   mr:"भाषा मराठी केली आहे. आता उत्तरे मराठीत मिळतील."},
   ask:{en:"What can I help you with?",hi:"मैं आपकी क्या मदद कर सकता हूँ?",mr:"मी तुम्हाला कशी मदत करू शकतो?"},
   listening:{en:"Listening…",hi:"सुन रहा हूँ…",mr:"ऐकत आहे…"},
   noSupport:{en:"Voice recognition is not supported in this browser. Please use Chrome/Edge and allow microphone access.",
@@ -170,7 +231,7 @@ function rsAddVoiceAssistant(){
   if(!('speechSynthesis'in window)){ ttsDone=true; tryFinish(); return; }
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);
-  u.rate=0.95;
+  u.rate=0.95;u.pitch=1.08;
   const wantLang=SR_LANG_MAP[curLang()]||'en-IN';
   const finish=()=>{ if(ttsDone)return; ttsDone=true; tryFinish(); };
   u.onend=finish; u.onerror=finish;
@@ -178,8 +239,8 @@ function rsAddVoiceAssistant(){
   function doSpeak(){
    if(spoken) return; spoken=true;
    const voices=speechSynthesis.getVoices();
-   const v=voices.find(v=>v.lang===wantLang)||voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(curLang()));
-   if(v){ u.voice=v; u.lang=v.lang; } else { u.lang='en-US'; }
+   const v=SS_PICK_VOICE(voices,wantLang);
+   if(v){ u.voice=v; u.lang=v.lang; } else { u.lang='en-US'; } const okv=v&&v.lang.toLowerCase().startsWith(curLang());const dg=document.getElementById('ssVoiceDiag');if(dg){dg.textContent=(!okv&&curLang()!=='en')?(curLang()==='hi'?'Hindi':'Marathi')+' voice is not installed on this device, so audio may stay silent (text reply is still shown). Install it in OS speech settings, or use Microsoft Edge.':'';}
    speechSynthesis.speak(u);
   }
   if(speechSynthesis.getVoices().length===0){
@@ -220,6 +281,10 @@ function rsAddVoiceAssistant(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   const out=document.getElementById('ssVoiceText');
   if(!SR){ if(out)out.textContent=tr('noSupport'); return; }
+  // Stop the assistant's own voice before listening, or the mic picks up its own
+  // reply through the speaker and misfires / mishears.
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const beginListening=()=>{
   const r=new SR(); r.lang=SR_LANG_MAP[curLang()]||'en-IN'; r.interimResults=false; r.maxAlternatives=1;
   if(out) out.textContent=tr('listening');
   let gotResult=false;
@@ -234,6 +299,8 @@ function rsAddVoiceAssistant(){
   };
   r.onend=()=>{ if(!gotResult && out) out.textContent=tr('timeout'); };
   r.start();
+  };
+  if(typeof speechSynthesis!=='undefined' && speechSynthesis.speaking){ setTimeout(beginListening,180); } else { beginListening(); }
  }
  const wrap=document.createElement('div');
  wrap.innerHTML=`<button id="ssVoiceBtn" aria-label="Open AI voice assistant" title="Ask SwasthyaSetu AI">🎙️ <span>AI Assist</span></button><div id="ssVoicePanel" class="ss-voice-panel" aria-live="polite"><b>🤖 SwasthyaSetu AI Assistant</b><small>Bolke kholiye — "ambulance", "hospitals", "ICU beds", "SOS", "main dashboard"</small><div id="ssVoiceText">${tr('ask')}</div><button id="ssVoiceStart" class="btn red btn-sm">🎤 Start Talking</button></div>`;
@@ -245,7 +312,10 @@ function rsAddVoiceAssistant(){
   if(!wasOpen){ document.getElementById('ssVoiceText').textContent=tr('ask'); speak(tr('ask')); }
  };
  document.getElementById('ssVoiceStart').onclick=startVoice;
- if(!sessionStorage.getItem('ssVoiceGreeted')){
+ if(sessionStorage.getItem('ssLangAnnounce')){
+  sessionStorage.removeItem('ssLangAnnounce'); sessionStorage.setItem('ssVoiceGreeted','1');
+  setTimeout(()=>{ const m=tr('langSet'); const panel=document.getElementById('ssVoicePanel'); if(panel)panel.classList.add('show'); const out=document.getElementById('ssVoiceText'); if(out)out.textContent=m; speak(m); },600);
+ } else if(!sessionStorage.getItem('ssVoiceGreeted')){
   sessionStorage.setItem('ssVoiceGreeted','1');
   setTimeout(()=>{ const out=document.getElementById('ssVoiceText'); if(out)out.textContent=tr('greetFirst'); speak(tr('greetFirst')); },700);
  }

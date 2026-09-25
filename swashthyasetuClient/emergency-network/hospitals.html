@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hospital Availability — SwasthyaSetu</title>
+<title data-en="Hospital Availability — SwasthyaSetu" data-hi="अस्पताल उपलब्धता — स्वास्थ्यसेतु" data-mr="रुग्णालय उपलब्धता — स्वास्थ्यसेतू">Hospital Availability — SwasthyaSetu</title>
 <link rel="stylesheet" href="assets/styles.css">
 <style>
   .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:22px;}
@@ -24,27 +24,27 @@
 </head>
 <body><section class="section" style="padding-bottom:0;">
   <div class="container">
-    <div class="eyebrow">Module 03</div>
-    <h1 style="font-size:32px;margin-top:10px;">Hospital Availability</h1>
-    <p class="muted mt-16" style="max-width:640px;font-size:15px;">Live bed counts and specialties across the network — sorted by distance from you, so you know before you travel.</p>
+    <div class="eyebrow" data-en="Module 03" data-hi="मॉड्यूल 03" data-mr="मॉड्यूल 03">Module 03</div>
+    <h1 style="font-size:32px;margin-top:10px;" data-en="Hospital Availability" data-hi="अस्पताल उपलब्धता" data-mr="रुग्णालय उपलब्धता">Hospital Availability</h1>
+    <p class="muted mt-16" style="max-width:640px;font-size:15px;" data-en="Live bed counts and specialties across the network — sorted by distance from you, so you know before you travel." data-hi="नेटवर्क में लाइव बेड गिनती व विशेषज्ञताएं — आपसे दूरी अनुसार क्रमबद्ध, ताकि यात्रा से पहले ही पता हो।" data-mr="नेटवर्कमधील लाइव्ह बेड मोजणी व तज्ज्ञता — तुमच्यापासूनच्या अंतरानुसार क्रमवारीत, जेणेकरून प्रवासापूर्वीच कळेल.">Live bed counts and specialties across the network — sorted by distance from you, so you know before you travel.</p>
 
     <div class="toolbar">
       <input id="search" type="text" placeholder="Search hospital name or area…">
       <select id="specFilter">
-        <option value="">All specialties</option>
-        <option>Trauma</option><option>Cardiology</option><option>Neurology</option>
-        <option>Orthopaedics</option><option>Paediatrics</option><option>Burns</option><option>General Surgery</option>
+        <option value="" data-en="All specialties" data-hi="सभी विशेषज्ञताएं" data-mr="सर्व तज्ज्ञता">All specialties</option>
+        <option value="Trauma" data-en="Trauma" data-hi="आघात" data-mr="इजा">Trauma</option><option value="Cardiology" data-en="Cardiology" data-hi="हृदय रोग" data-mr="हृदयरोग">Cardiology</option><option value="Neurology" data-en="Neurology" data-hi="तंत्रिका विज्ञान" data-mr="न्यूरोलॉजी">Neurology</option>
+        <option value="Orthopaedics" data-en="Orthopaedics" data-hi="हड्डी रोग" data-mr="अस्थिरोग">Orthopaedics</option><option value="Paediatrics" data-en="Paediatrics" data-hi="बाल रोग" data-mr="बालरोग">Paediatrics</option><option value="Burns" data-en="Burns" data-hi="जलना" data-mr="भाजणे">Burns</option><option value="General Surgery" data-en="General Surgery" data-hi="सामान्य सर्जरी" data-mr="सामान्य शस्त्रक्रिया">General Surgery</option>
       </select>
       <select id="statusFilter">
-        <option value="">Any availability</option>
-        <option value="available">Beds available</option>
-        <option value="busy">Limited beds</option>
+        <option value="" data-en="Any availability" data-hi="कोई भी उपलब्धता" data-mr="कोणतीही उपलब्धता">Any availability</option>
+        <option value="available" data-en="Beds available" data-hi="बेड उपलब्ध" data-mr="बेड उपलब्ध">Beds available</option>
+        <option value="busy" data-en="Limited beds" data-hi="सीमित बेड" data-mr="मर्यादित बेड">Limited beds</option>
       </select>
     </div>
   </div>
 </section>
 
-<section class="container mt-24" id="quickDemo"><div class="card card-pad"><div class="eyebrow">FAST ACCESS • DEMO</div><h3 style="margin-top:8px;">Quick demo hospitals — tap to view</h3><p class="faint mt-8">Simulated demo data — available without typing in search.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:16px;"><button class="card" type="button" style="text-align:left;padding:16px;cursor:pointer;border:1px solid var(--border);" onclick="document.getElementById('search').value='Sanjeevani General Hospital';render();window.scrollTo({top:document.querySelector('section.container').offsetTop,behavior:'smooth'})"><b>Sanjeevani General Hospital</b><div class="faint" style="font-size:12px;margin-top:5px;">Emergency • ICU • Trauma</div><div class="pill pill-ok" style="margin-top:10px;display:inline-flex;">2.1 km</div></button><button class="card" type="button" style="text-align:left;padding:16px;cursor:pointer;border:1px solid var(--border);" onclick="document.getElementById('search').value='Jamshedpur City Hospital';render();window.scrollTo({top:document.querySelector('section.container').offsetTop,behavior:'smooth'})"><b>Jamshedpur City Hospital</b><div class="faint" style="font-size:12px;margin-top:5px;">24×7 Emergency • Cardiology</div><div class="pill pill-ok" style="margin-top:10px;display:inline-flex;">3.4 km</div></button><button class="card" type="button" style="text-align:left;padding:16px;cursor:pointer;border:1px solid var(--border);" onclick="document.getElementById('search').value='Swasthya Care Centre';render();window.scrollTo({top:document.querySelector('section.container').offsetTop,behavior:'smooth'})"><b>Swasthya Care Centre</b><div class="faint" style="font-size:12px;margin-top:5px;">General • Paediatrics</div><div class="pill pill-ok" style="margin-top:10px;display:inline-flex;">4.0 km</div></button></div></div></section>
+<section class="container mt-24" id="quickDemo"><div class="card card-pad"><div class="eyebrow" data-en="FAST ACCESS • DEMO" data-hi="तेज़ पहुंच • डेमो" data-mr="जलद प्रवेश • डेमो">FAST ACCESS • DEMO</div><h3 style="margin-top:8px;" data-en="Quick demo hospitals — tap to view" data-hi="त्वरित डेमो अस्पताल — देखने के लिए टैप करें" data-mr="द्रुत डेमो रुग्णालये — पाहण्यासाठी टॅप करा">Quick demo hospitals — tap to view</h3><p class="faint mt-8" data-en="Simulated demo data — available without typing in search." data-hi="सिम्युलेटेड डेमो डेटा — बिना टाइप किए सर्च में उपलब्ध।" data-mr="सिम्युलेटेड डेमो डेटा — न टाइप करता शोधात उपलब्ध.">Simulated demo data — available without typing in search.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:16px;"><button class="card" type="button" style="text-align:left;padding:16px;cursor:pointer;border:1px solid var(--border);" onclick="document.getElementById('search').value='Sanjeevani General Hospital';render();window.scrollTo({top:document.querySelector('section.container').offsetTop,behavior:'smooth'})"><b data-en="Sanjeevani General Hospital" data-hi="संजीवनी जनरल अस्पताल" data-mr="संजीवनी जनरल रुग्णालय">Sanjeevani General Hospital</b><div class="faint" style="font-size:12px;margin-top:5px;" data-en="Emergency • ICU • Trauma" data-hi="आपातकाल • ICU • आघात" data-mr="आणीबाणी • ICU • आघात">Emergency • ICU • Trauma</div><div class="pill pill-ok" style="margin-top:10px;display:inline-flex;" data-en="2.1 km" data-hi="2.1 किमी" data-mr="2.1 किमी">2.1 km</div></button><button class="card" type="button" style="text-align:left;padding:16px;cursor:pointer;border:1px solid var(--border);" onclick="document.getElementById('search').value='Jamshedpur City Hospital';render();window.scrollTo({top:document.querySelector('section.container').offsetTop,behavior:'smooth'})"><b data-en="Jamshedpur City Hospital" data-hi="जमशेदपुर सिटी अस्पताल" data-mr="जमशेदपूर सिटी रुग्णालय">Jamshedpur City Hospital</b><div class="faint" style="font-size:12px;margin-top:5px;" data-en="24×7 Emergency • Cardiology" data-hi="24×7 आपातकाल • हृदय रोग" data-mr="24×7 आणीबाणी • हृदयरोग">24×7 Emergency • Cardiology</div><div class="pill pill-ok" style="margin-top:10px;display:inline-flex;" data-en="3.4 km" data-hi="3.4 किमी" data-mr="3.4 किमी">3.4 km</div></button><button class="card" type="button" style="text-align:left;padding:16px;cursor:pointer;border:1px solid var(--border);" onclick="document.getElementById('search').value='Swasthya Care Centre';render();window.scrollTo({top:document.querySelector('section.container').offsetTop,behavior:'smooth'})"><b data-en="Swasthya Care Centre" data-hi="स्वास्थ्य केयर सेंटर" data-mr="स्वास्थ्य केअर सेंटर">Swasthya Care Centre</b><div class="faint" style="font-size:12px;margin-top:5px;" data-en="General • Paediatrics" data-hi="सामान्य • बाल रोग" data-mr="सामान्य • बालरोग">General • Paediatrics</div><div class="pill pill-ok" style="margin-top:10px;display:inline-flex;" data-en="4.0 km" data-hi="4.0 किमी" data-mr="4.0 किमी">4.0 km</div></button></div></div></section>
 <section class="container">
   <div class="hlist" id="hlist"></div>
 </section>
@@ -54,9 +54,9 @@
 rsInitShell('hospitals.html');
 
 function statusPill(h){
-  if (h.status === 'full') return '<span class="pill pill-alert">Full — no beds</span>';
-  if (h.status === 'busy') return '<span class="pill pill-warn">Limited beds</span>';
-  return '<span class="pill pill-ok">Beds available</span>';
+  if (h.status === 'full') return '<span class="pill pill-alert" data-en="Full — no beds" data-hi="भरा — कोई बेड नहीं" data-mr="पूर्ण — बेड नाही">Full — no beds</span>';
+  if (h.status === 'busy') return '<span class="pill pill-warn" data-en="Limited beds" data-hi="सीमित बेड" data-mr="मर्यादित बेड">Limited beds</span>';
+  return '<span class="pill pill-ok" data-en="Beds available" data-hi="बेड उपलब्ध" data-mr="बेड उपलब्ध">Beds available</span>';
 }
 function bedColor(occ, total){
   const pct = occ/total;
@@ -94,11 +94,11 @@ function render(){
       </div>
       <div class="actions">
         <div class="faint mono" style="font-size:11.5px;">Queue: ${h.queue} · ~${h.avgWait} min wait</div>
-        <button class="btn btn-primary btn-sm" onclick="reserveToken('${h.id}')">Reserve a token</button>
+        <button class="btn btn-primary btn-sm" onclick="reserveToken('${h.id}')" data-en="Reserve a token" data-hi="टोकन आरक्षित करें" data-mr="टोकन आरक्षित करा">Reserve a token</button>
         <a href="tel:${h.phone.replace(/\\s/g,'')}" class="btn btn-outline btn-sm">Call ${h.phone}</a>
       </div>
     </div>
-  `).join('') || '<div class="card card-pad">No hospitals match those filters.</div>';
+  `).join('') || '<div class="card card-pad" data-en="No hospitals match those filters." data-hi="इन फ़िल्टरों से कोई अस्पताल मेल नहीं खाता।" data-mr="या फिल्टरशी जुळणारे रुग्णालय नाहीत.">No hospitals match those filters.</div>';
 }
 
 function reserveToken(id){

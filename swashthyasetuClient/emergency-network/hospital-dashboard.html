@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hospital Dashboard — SwasthyaSetu</title>
+<title data-en="Hospital Dashboard — SwasthyaSetu" data-hi="अस्पताल डैशबोर्ड — स्वास्थ्यसेतु" data-mr="रुग्णालय डॅशबोर्ड — स्वास्थ्यसेतू">Hospital Dashboard — SwasthyaSetu</title>
 <link rel="stylesheet" href="assets/styles.css">
 <style>
   .dash-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding:36px 0 0;}
@@ -20,8 +20,8 @@
 </head>
 <body><section class="container dash-head">
   <div>
-    <div class="eyebrow">Module 06 · Staff view</div>
-    <h1 style="font-size:28px;margin-top:8px;">Hospital Dashboard</h1>
+    <div class="eyebrow" data-en="Module 06 · Staff view" data-hi="मॉड्यूल 06 · स्टाफ दृश्य" data-mr="मॉड्यूल 06 · कर्मचारी दृश्य">Module 06 · Staff view</div>
+    <h1 style="font-size:28px;margin-top:8px;" data-en="Hospital Dashboard" data-hi="अस्पताल डैशबोर्ड" data-mr="रुग्णालय डॅशबोर्ड">Hospital Dashboard</h1>
   </div>
   <div class="selectbar">
     <select id="hospSel"></select>
@@ -36,33 +36,33 @@
   <div>
     <div class="card card-pad">
       <div class="flex-between">
-        <h3 style="font-size:15.5px;">Front-desk queue — live tokens</h3>
+        <h3 style="font-size:15.5px;" data-en="Front-desk queue — live tokens" data-hi="फ्रंट-डेस्क कतार — लाइव टोकन" data-mr="फ्रंट-डेस्क रांग — लाइव्ह टोकन">Front-desk queue — live tokens</h3>
         <span class="pill pill-ok" id="queueCountPill">—</span>
       </div>
       <div class="mt-16" id="queueList"></div>
-      <button class="btn btn-outline btn-sm mt-16" onclick="callNext()">Call next token</button>
+      <button class="btn btn-outline btn-sm mt-16" onclick="callNext()" data-en="Call next token" data-hi="अगला टोकन बुलाएं" data-mr="पुढील टोकन बोलवा">Call next token</button>
     </div>
 
     <div class="card card-pad mt-24">
-      <h3 style="font-size:15.5px;">Doctors on duty today</h3>
+      <h3 style="font-size:15.5px;" data-en="Doctors on duty today" data-hi="आज ड्यूटी पर डॉक्टर" data-mr="आज कर्तव्यावर डॉक्टर">Doctors on duty today</h3>
       <div class="mt-16" id="miniDocs"></div>
-      <a href="doctor-availability.html" class="btn btn-ghost btn-sm mt-16">Manage doctor schedule →</a>
+      <a href="doctor-availability.html" class="btn btn-ghost btn-sm mt-16" data-en="Manage doctor schedule →" data-hi="डॉक्टर शेड्यूल प्रबंधित करें →" data-mr="डॉक्टर वेळापत्रक व्यवस्थापित करा →">Manage doctor schedule →</a>
     </div>
   </div>
 
   <div>
     <div class="card card-pad">
       <div class="flex-between">
-        <h3 style="font-size:15.5px;">Incoming ambulances</h3>
+        <h3 style="font-size:15.5px;" data-en="Incoming ambulances" data-hi="आने वाली एम्बुलेंस" data-mr="येणाऱ्या रुग्णवाहिका">Incoming ambulances</h3>
         <span class="pill pill-alert" id="incomingPill">—</span>
       </div>
       <div class="mt-16" id="incomingList"></div>
     </div>
 
     <div class="card card-pad mt-24">
-      <h3 style="font-size:15.5px;">Bed snapshot</h3>
+      <h3 style="font-size:15.5px;" data-en="Bed snapshot" data-hi="बेड स्नैपशॉट" data-mr="बेड स्नॅपशॉट">Bed snapshot</h3>
       <div class="mt-16" id="bedSnap"></div>
-      <a href="icu-beds.html" class="btn btn-ghost btn-sm mt-16">Full ICU & bed view →</a>
+      <a href="icu-beds.html" class="btn btn-ghost btn-sm mt-16" data-en="Full ICU &amp; bed view →" data-hi="पूरा ICU व बेड दृश्य →" data-mr="संपूर्ण ICU व बेड दृश्य →">Full ICU & bed view →</a>
     </div>
   </div>
 </section>
@@ -81,10 +81,10 @@ function render(){
   const availableDocs = docs.filter(d=>d.status==='available').length;
 
   document.getElementById('statTiles').innerHTML = `
-    <div class="stat-tile"><div class="num">${h.queue}</div><div class="label">Patients in queue</div></div>
-    <div class="stat-tile"><div class="num">${availableDocs}/${docs.length}</div><div class="label">Doctors available now</div></div>
-    <div class="stat-tile"><div class="num">${h.beds.general.total-h.beds.general.occupied}</div><div class="label">General beds free</div></div>
-    <div class="stat-tile"><div class="num">${h.beds.icu.total-h.beds.icu.occupied}</div><div class="label">ICU beds free</div></div>
+    <div class="stat-tile"><div class="num">${h.queue}</div><div class="label" data-en="Patients in queue" data-hi="कतार में मरीज" data-mr="रांगेत रुग्ण">Patients in queue</div></div>
+    <div class="stat-tile"><div class="num">${availableDocs}/${docs.length}</div><div class="label" data-en="Doctors available now" data-hi="अभी उपलब्ध डॉक्टर" data-mr="आता उपलब्ध डॉक्टर">Doctors available now</div></div>
+    <div class="stat-tile"><div class="num">${h.beds.general.total-h.beds.general.occupied}</div><div class="label" data-en="General beds free" data-hi="सामान्य बेड खाली" data-mr="सामान्य बेड रिकामे">General beds free</div></div>
+    <div class="stat-tile"><div class="num">${h.beds.icu.total-h.beds.icu.occupied}</div><div class="label" data-en="ICU beds free" data-hi="ICU बेड खाली" data-mr="ICU बेड रिकामे">ICU beds free</div></div>
   `;
 
   document.getElementById('queueCountPill').textContent = h.queue + ' waiting';
@@ -103,7 +103,7 @@ function render(){
     <div class="mini-doc">
       <div><b>${d.name}</b><div class="faint" style="font-size:11.5px;">${d.dept}</div></div>
       <span class="pill ${d.status==='available'?'pill-ok':d.status==='in-surgery'?'pill-warn':d.status==='busy'?'pill-warn':'pill-muted'}">${d.status.replace('-',' ')}</span>
-    </div>`).join('') || '<p class="faint" style="font-size:13px;">No doctors scheduled here today.</p>';
+    </div>`).join('') || '<p class="faint" style="font-size:13px;" data-en="No doctors scheduled here today." data-hi="आज यहां कोई डॉक्टर निर्धारित नहीं।" data-mr="आज येथे कोणताही डॉक्टर नियोजित नाही.">No doctors scheduled here today.</p>';
 
   const inc = rsGetAlerts().filter(a => a.hospital === h.name && a.status !== 'Resolved');
   document.getElementById('incomingPill').textContent = inc.length + ' active';
@@ -112,7 +112,7 @@ function render(){
       <b>${a.severity} · ${a.ambulance}</b>
       <p>${a.note}</p>
       <p class="faint mono" style="margin-top:6px;">${rsTimeAgo(a.time)} · ${a.status}</p>
-    </div>`).join('') || '<p class="faint" style="font-size:13px;">No ambulances currently inbound.</p>';
+    </div>`).join('') || '<p class="faint" style="font-size:13px;" data-en="No ambulances currently inbound." data-hi="अभी कोई एम्बुलेंस आ नहीं रही।" data-mr="सध्या कोणतीही रुग्णवाहिका येत नाही.">No ambulances currently inbound.</p>';
 
   document.getElementById('bedSnap').innerHTML = ['general','icu','ventilator','pediatric'].map(k => {
     const b = h.beds[k]; const pct = (b.occupied/b.total)*100;
